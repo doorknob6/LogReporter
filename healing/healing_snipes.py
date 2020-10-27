@@ -87,6 +87,7 @@ if __name__ == '__main__':
         server = 'Nethergarde Keep'
         region = 'EU'
         guild = 'Nerf Inc'
+        api_key = ''
 
         dir_name = os.path.dirname(os.path.abspath(__file__))
         with open(os.path.join(dir_name, 'wcl_clients.json')) as f:

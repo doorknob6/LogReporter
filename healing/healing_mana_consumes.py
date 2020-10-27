@@ -10,6 +10,8 @@ if __name__ == '__main__':
         server = 'Nethergarde Keep'
         region = 'EU'
         guild = 'Nerf Inc'
+        api_key = ''
+        
         nexus_server_id = 'nethergarde-keep-alliance'
 
         consume_list = [{'abilityid': 27869, 'itemid' : 20520, 'name' : 'Dark Rune', 'amount' : 0},

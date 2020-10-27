@@ -10,6 +10,7 @@ if __name__ == '__main__':
         region = 'EU'
         guild = 'Nerf Inc'
         dir_name = os.path.dirname(os.path.abspath(__file__))
+        api_key = ''
         with open(os.path.join(dir_name, 'wcl_clients.json')) as f:
             wcl_clients = json.load(f)
             for client in wcl_clients:
