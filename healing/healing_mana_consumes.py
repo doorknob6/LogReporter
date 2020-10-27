@@ -1,5 +1,5 @@
-from Api import WCLApi
-from Api import NexusApi, Price
+from WCLApi import WCLApi
+from NexusApi import NexusApi, Price
 import json
 import os
 import math

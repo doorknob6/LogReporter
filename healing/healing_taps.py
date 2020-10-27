@@ -1,4 +1,4 @@
-from Api import WCLApi
+from WCLApi import WCLApi
 import json
 import os
 from datetime import datetime, timedelta
