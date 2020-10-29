@@ -1,0 +1,327 @@
+[
+    {
+        "spell_id": 10917,
+        "name": "Flash Heal (Rank 7)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 10916,
+        "name": "Flash Heal (Rank 6)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 10915,
+        "name": "Flash Heal (Rank 5)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 9474,
+        "name": "Flash Heal (Rank 4)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 9473,
+        "name": "Flash Heal (Rank 3)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 9472,
+        "name": "Flash Heal (Rank 2)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 2061,
+        "name": "Flash Heal (Rank 1)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 2050,
+        "name": "Lesser Heal (Rank 1)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 2052,
+        "name": "Lesser Heal (Rank 2)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 2053,
+        "name": "Lesser Heal (Rank 3)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 25314,
+        "name": "Greater Heal (Rank 5)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 10965,
+        "name": "Greater Heal (Rank 4)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 10964,
+        "name": "Greater Heal (Rank 3)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 10963,
+        "name": "Greater Heal (Rank 2)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 2060,
+        "name": "Greater Heal (Rank 1)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 6064,
+        "name": "Heal (Rank 4)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 6063,
+        "name": "Heal (Rank 3)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 2055,
+        "name": "Heal (Rank 2)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 2054,
+        "name": "Heal (Rank 1)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 5185,
+        "name": "Healing Touch (Rank 1)",
+        "duration": 1000
+    },
+    {
+        "spell_id": 5186,
+        "name": "Healing Touch (Rank 2)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 5187,
+        "name": "Healing Touch (Rank 3)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 5188,
+        "name": "Healing Touch (Rank 4)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 5189,
+        "name": "Healing Touch (Rank 5)",
+        "duration": 3000
+    },
+    {
+        "spell_id": 6778,
+        "name": "Healing Touch (Rank 6)",
+        "duration": 3000
+    },
+    {
+        "spell_id": 8903,
+        "name": "Healing Touch (Rank 7)",
+        "duration": 3000
+    },
+    {
+        "spell_id": 9758,
+        "name": "Healing Touch (Rank 8)",
+        "duration": 3000
+    },
+    {
+        "spell_id": 9888,
+        "name": "Healing Touch (Rank 9)",
+        "duration": 3000
+    },
+    {
+        "spell_id": 9889,
+        "name": "Healing Touch (Rank 10)",
+        "duration": 3000
+    },
+    {
+        "spell_id": 25297,
+        "name": "Healing Touch (Rank 10)",
+        "duration": 3000
+    },
+    {
+        "spell_id": 8936,
+        "name": "Regrowth (Rank 1)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 8938,
+        "name": "Regrowth (Rank 2)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 8939,
+        "name": "Regrowth (Rank 3)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 8940,
+        "name": "Regrowth (Rank 4)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 8941,
+        "name": "Regrowth (Rank 5)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 9750,
+        "name": "Regrowth (Rank 6)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 9856,
+        "name": "Regrowth (Rank 7)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 9857,
+        "name": "Regrowth (Rank 8)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 9858,
+        "name": "Regrowth (Rank 9)",
+        "duration": 2000
+    },
+    {
+        "spell_id": 635,
+        "name": "Holy Light (Rank 1)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 639,
+        "name": "Holy Light (Rank 2)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 647,
+        "name": "Holy Light (Rank 3)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 1026,
+        "name": "Holy Light (Rank 4)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 1042,
+        "name": "Holy Light (Rank 5)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 3472,
+        "name": "Holy Light (Rank 6)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 10328,
+        "name": "Holy Light (Rank 7)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 10329,
+        "name": "Holy Light (Rank 8)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 25292,
+        "name": "Holy Light (Rank 9)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 19968,
+        "name": "Holy Light (Rank 9)",
+        "duration": 2500
+    },
+    {
+        "spell_id": 19750,
+        "name": "Flash of Light (Rank 1)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 19939,
+        "name": "Flash of Light (Rank 2)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 19940,
+        "name": "Flash of Light (Rank 3)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 19941,
+        "name": "Flash of Light (Rank 4)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 19942,
+        "name": "Flash of Light (Rank 5)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 19943,
+        "name": "Flash of Light (Rank 6)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 19993,
+        "name": "Flash of Light (Rank 6)",
+        "duration": 1500
+    },
+    {
+        "spell_id": 20473,
+        "name": "Holy Shock (Rank 1)",
+        "duration": 0
+    },
+    {
+        "spell_id": 25912,
+        "name": "Holy Shock (Rank 1)",
+        "duration": 0
+    },
+    {
+        "spell_id": 25914,
+        "name": "Holy Shock (Rank 1)",
+        "duration": 0
+    },
+    {
+        "spell_id": 20929,
+        "name": "Holy Shock (Rank 2)",
+        "duration": 0
+    },
+    {
+        "spell_id": 25911,
+        "name": "Holy Shock (Rank 2)",
+        "duration": 0
+    },
+    {
+        "spell_id": 25913,
+        "name": "Holy Shock (Rank 2)",
+        "duration": 0
+    },
+    {
+        "spell_id": 20930,
+        "name": "Holy Shock (Rank 3)",
+        "duration": 0
+    },
+    {
+        "spell_id": 25902,
+        "name": "Holy Shock (Rank 3)",
+        "duration": 0
+    },
+    {
+        "spell_id": 25903,
+        "name": "Holy Shock (Rank 3)",
+        "duration": 0
+    }
+]

@@ -1,0 +1,32 @@
+[
+    {
+        "abilityid": 27869,
+        "itemid": 20520,
+        "name": "Dark Rune"
+    },
+    {
+        "abilityid": 16666,
+        "itemid": 12662,
+        "name": "Demonic Rune"
+    },
+    {
+        "abilityid": 17531,
+        "itemid": 13444,
+        "name": "Major Mana Potion"
+    },
+    {
+        "abilityid": 17530,
+        "itemid": 13443,
+        "name": "Superior Mana Potion"
+    },
+    {
+        "abilityid": 11903,
+        "itemid": 6149,
+        "name": "Greater Mana Potion"
+    },
+    {
+        "abilityid": 15701,
+        "itemid": 11952,
+        "name": "Night Dragons Breath"
+    }
+]
