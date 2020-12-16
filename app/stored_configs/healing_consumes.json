@@ -1,32 +1,36 @@
-[
-    {
-        "abilityid": 27869,
-        "itemid": 20520,
-        "name": "Dark Rune"
-    },
-    {
-        "abilityid": 16666,
-        "itemid": 12662,
-        "name": "Demonic Rune"
-    },
-    {
-        "abilityid": 17531,
-        "itemid": 13444,
-        "name": "Major Mana Potion"
-    },
-    {
-        "abilityid": 17530,
-        "itemid": 13443,
-        "name": "Superior Mana Potion"
-    },
-    {
-        "abilityid": 11903,
-        "itemid": 6149,
-        "name": "Greater Mana Potion"
-    },
-    {
-        "abilityid": 15701,
-        "itemid": 11952,
-        "name": "Night Dragons Breath"
-    }
-]
+{
+    "name" : "healing_consumes",
+    "content" :
+    [
+        {
+            "ability_id": 27869,
+            "item_id": 20520,
+            "name": "Dark Rune"
+        },
+        {
+            "ability_id": 16666,
+            "item_id": 12662,
+            "name": "Demonic Rune"
+        },
+        {
+            "ability_id": 17531,
+            "item_id": 13444,
+            "name": "Major Mana Potion"
+        },
+        {
+            "ability_id": 17530,
+            "item_id": 13443,
+            "name": "Superior Mana Potion"
+        },
+        {
+            "ability_id": 11903,
+            "item_id": 6149,
+            "name": "Greater Mana Potion"
+        },
+        {
+            "ability_id": 15701,
+            "item_id": 11952,
+            "name": "Night Dragons Breath"
+        }
+    ]
+}

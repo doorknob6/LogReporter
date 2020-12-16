@@ -61,7 +61,7 @@ if __name__ == '__main__':
         region = 'EU'
         #TODO: Remove the guild // move to stored configs
         guild = 'Nerf Inc'
-        
+
         #TODO: Remove the nexus_server_id
         nexus_server_id = 'nethergarde-keep-alliance'
 
