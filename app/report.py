@@ -28,3 +28,12 @@ class Report():
         if 'target' in event:
             if 'id' in event['target']:
                 return event['target']['id']
+
+    def get_input(self, input_variable, standard_val, unit=''):
+        while True:
+            i = input(f"Input {input_variable} [Enter to Accept]: {standard_val:>5}{unit} : ")
+            if i:
+                i = int(i.strip(unit))
+                return i
+            else:
+                return standard_val

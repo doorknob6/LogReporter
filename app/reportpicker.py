@@ -53,8 +53,9 @@ class Reportpicker():
                                     line += f" {report['title']}"
                                     print(line)
                                 while True:
-                                    num_sel = int(input('\nSelect a report number or choose a higher number of reports to be listed [int]: '))
+                                    num_sel = input('\nSelect a report number or choose a higher number of reports to be listed [int]: ')
                                     if num_sel:
+                                        num_sel = int(num_sel)
                                         if num_sel < n:
                                             report = reports[num_sel - 1]
                                             print('\nReport selected: ')
