@@ -37,3 +37,13 @@ class Report():
                 return i
             else:
                 return standard_val
+    
+    def get_fight_name(self, event):
+        if 'fight' in event:
+            if self.fight_names:
+                return self.fight_names[event['fight']]
+        else:
+            if self.fights:
+                for fight in self.fights['fights']:
+                    if fight['start_time'] <= event['timestamp'] <= fight['end_time']:
+                        return fight['name']

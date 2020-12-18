@@ -17,6 +17,7 @@ class Main():
         #self.report = Report(self.report, self.api)
         self.healing_saves = HealingSaves(self.report, self.api)
         self.healing_saves.healing_saves()
+        self.healing_saves.make_event_plot(self.healing_saves.near_deaths)
 
     def read_configs(self, config_dir):
         assert os.path.isdir(config_dir), f'The given config folder path is not a directory: {config_dir}'

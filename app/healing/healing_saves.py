@@ -1,9 +1,9 @@
-from WCLApi import WCLApi
-import json
-import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from app.report import Report
 from tqdm import tqdm
+import numpy as np
+import plotly.graph_objects as go
+
 
 class HealingSaves(Report):
 
@@ -82,29 +82,38 @@ class HealingSaves(Report):
 
                                 damage.update({'saves' : saves})
                                 self.near_deaths.append(damage)
+                                
+                                target_name = self.friendly_names[damage['targetID']]
+                                damage.update({'targetName' : target_name})
+                                fight_name = self.get_fight_name(damage)
+
+                                damage.update({'fightName' : fight_name})
+
+                                fight_str = f"During {fight_name} - "
+                                save_amount = 0
 
                                 for save in saves:
+                                    save_amount += save['amount']
+                                    save.update({'saveDamage' : damage})
+                                    save.update({'fightname' : fight_name})
                                     healer = self.friendly_names[save['sourceID']]
+                                    save.update({'healerName' : healer})
+                                    save.update({'targetName' : target_name})
+                                    save.update({'timeString' : datetime.fromtimestamp((self.start + save['timestamp'])/1000).strftime(r'%H:%M:%S')})
+                                    save.update({'eventString' : f"{save['timeString']} {healer} saved {target_name} at {damage['hitPoints']}% hp using {save['ability']['name']} for {save['amount']} during {fight_name}"})
                                     if healer in self.save_healers:
                                         self.save_healers[healer].update({'healing amount' : self.save_healers[healer]['healing amount'] + save['amount']})
                                         self.save_healers[healer]['saves'].append(save)
+                                        self.save_healers[healer].update({'completeString' : f"{healer} : saved people {len(self.save_healers[healer]['saves'])} times for {self.save_healers[healer]['healing amount']} healing total"})
                                     else:
-                                        self.save_healers.update({healer : {'healing amount' : save['amount'],
-                                                                            'saves' : [save]}})
+                                        self.save_healers.update({healer : {'healing amount' : save['amount'], 'saves' : [save]}})
+                                        self.save_healers[healer].update({'completeString' : f"{healer} : saved people {len(self.save_healers[healer]['saves'])} times for {self.save_healers[healer]['healing amount']} healing total"})
 
-                                saves_str = ', '.join([f"{self.friendly_names[s['sourceID']]} : {s['amount']}" for s in saves])
-                                fight_str = ""
-
-                                if 'fight' in damage:
-                                    fight_str = f"During {self.fight_names[damage['fight']]} - "
-                                else:
-                                    for fight in self.fights['fights']:
-                                        if fight['start_time'] <= damage['timestamp'] <= fight['end_time']:
-                                            fight_str = f"During {fight['name']} - "
-                                            break
-
-                                damage_string = f"{t_stamp}: {fight_str}Near death of {self.friendly_names[damage['targetID']]} with {damage['hitPoints']}% hp saved by {saves_str}"
+                                saves_str = ', '.join([f"{s['healerName']} : {s['amount']}" for s in saves])                            
+                                damage_string = f"{t_stamp}: {fight_str}Near death of {target_name} with {damage['hitPoints']}% hp saved by {saves_str}"
                                 damage.update({'eventString' : damage_string})
+
+                                damage.update({'amount' : save_amount})
                                 damage.update({'timeString' : t_stamp})
                                 print(damage_string)
 
@@ -112,10 +121,32 @@ class HealingSaves(Report):
 
         self.save_healers = {h : v for h, v in sorted(self.save_healers.items(), key=lambda item: len(item[1]['saves']), reverse=True)}
 
-        for healer, value in self.save_healers.items():
-            print(f"{healer} : saved people {len(value['saves'])} times for {value['healing amount']} healing total")
+        for healer in self.save_healers:
+            print(self.save_healers[healer]['completeString'])
 
         print('done')
+
+    def get_fight_name(self, event):
+        if 'fight' in event:
+            if self.fight_names:
+                return self.fight_names[event['fight']]
+        else:
+            if self.fights:
+                for fight in self.fights['fights']:
+                    if fight['start_time'] <= event['timestamp'] <= fight['end_time']:
+                        return fight['name']
+        return None
+
+    def make_event_plot(self, events):
+        timestamps = np.array([self.start] + [e['timestamp'] for e in events] + [self.end])
+        event_vals = np.array([0] + [e['amount'] for e in events] + [0])
+        event_strings = np.array([''] + [e['eventString'] for e in events] + [''])
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=timestamps, y=event_vals, hovertext=event_strings))
+        fig.show()
+
+
+
 
 if __name__ == '__main__':
     try:
