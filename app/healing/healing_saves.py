@@ -7,8 +7,8 @@ import plotly.graph_objects as go
 
 class HealingSaves(Report):
 
-    def __init__(self, report, api):
-        Report.__init__(self, report, api)
+    def __init__(self, report, api, fig_dir=None):
+        Report.__init__(self, report, api, fig_dir)
 
         print("\n\tRetrieving and sorting data ...")
 
@@ -82,7 +82,7 @@ class HealingSaves(Report):
 
                                 damage.update({'saves' : saves})
                                 self.near_deaths.append(damage)
-                                
+
                                 target_name = self.friendly_names[damage['targetID']]
                                 damage.update({'targetName' : target_name})
                                 fight_name = self.get_fight_name(damage)
@@ -109,7 +109,7 @@ class HealingSaves(Report):
                                         self.save_healers.update({healer : {'healing amount' : save['amount'], 'saves' : [save]}})
                                         self.save_healers[healer].update({'completeString' : f"{healer} : saved people {len(self.save_healers[healer]['saves'])} times for {self.save_healers[healer]['healing amount']} healing total"})
 
-                                saves_str = ', '.join([f"{s['healerName']} : {s['amount']}" for s in saves])                            
+                                saves_str = ', '.join([f"{s['healerName']} : {s['amount']}" for s in saves])
                                 damage_string = f"{t_stamp}: {fight_str}Near death of {target_name} with {damage['hitPoints']}% hp saved by {saves_str}"
                                 damage.update({'eventString' : damage_string})
 
@@ -138,15 +138,20 @@ class HealingSaves(Report):
         return None
 
     def make_event_plot(self, events):
-        timestamps = np.array([self.start] + [e['timestamp'] for e in events] + [self.end])
-        event_vals = np.array([0] + [e['amount'] for e in events] + [0])
-        event_strings = np.array([''] + [e['eventString'] for e in events] + [''])
+        timestamps = np.array([e['timestamp'] for e in events])
+        event_vals = np.array([e['amount'] for e in events])
+        event_strings = np.array([e['eventString'] for e in events])
         fig = go.Figure()
-        fig.add_trace(go.Bar(x=timestamps, y=event_vals, hovertext=event_strings))
+        fig.add_trace(go.Bar(x=timestamps, y=event_vals, hovertext=event_strings, width=20000))
         fig.show()
 
-
-
+    def make_save_plot(self, chars):
+        plot_names = np.array([c for c in chars])
+        plot_vals = np.array([len(chars[c]['saves']) for c in chars])
+        plot_strings = np.array([chars[c]['completeString'] for c in chars])
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=plot_vals, y=plot_names, hovertext=plot_strings, orientation='h'))
+        fig.show()
 
 if __name__ == '__main__':
     try:
