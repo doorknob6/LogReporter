@@ -1,12 +1,12 @@
 
 class Report():
 
-    def __init__(self, report, api, stored_figures_path=None):
+    def __init__(self, report, api, fig_dir=None):
         for key, item in report.items():
             self.__setattr__(key, item)
         self.api = api
+        self.fig_dir = fig_dir
         self.fights = self.api.get_report_fights(self.id)
-        self.stored_figures_path = stored_figures_path
 
     def get_fight_names(self, fights):
         fight_names = {}
@@ -37,7 +37,7 @@ class Report():
                 return i
             else:
                 return standard_val
-    
+
     def get_fight_name(self, event):
         if 'fight' in event:
             if self.fight_names:

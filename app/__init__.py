@@ -16,7 +16,7 @@ class Main():
         self.api = WCLApi(self.wcl_config.content.api_key, query_dir=self.query_dir)
         self.report = Reportpicker(self.wcl_config, api=self.api).pick_loop()
         #self.report = Report(self.report, self.api)
-        self.healing_saves = HealingSaves(self.report, self.api, stored_figures_path=self.figures_dir)
+        self.healing_saves = HealingSaves(self.report, self.api, fig_dir=self.figures_dir)
 
     def read_configs(self, config_dir):
         assert os.path.isdir(config_dir), f'The given config folder path is not a directory: {config_dir}'

@@ -13,8 +13,8 @@ from itertools import cycle
 
 class HealingSaves(Report):
 
-    def __init__(self, report, api, stored_figures_path=None):
-        Report.__init__(self, report, api, stored_figures_path=stored_figures_path)
+    def __init__(self, report, api, fig_dir=None):
+        Report.__init__(self, report, api, fig_dir=fig_dir)
 
         print("\n\tRetrieving and sorting data ...")
 
@@ -62,7 +62,7 @@ class HealingSaves(Report):
         self.heal_timeout = self.get_input("heal timeout", 3000, 'ms')
         self.heal_treshold = self.get_input("heal treshold", 800, 'hp')
 
-        self.plot_path = os.path.join(self.stored_figures_path, self.saves_plot_name()) if self.saves_plot_name() is not None else None
+        self.plot_path = os.path.join(self.fig_dir, self.saves_plot_name()) if self.saves_plot_name() is not None else None
 
         self.healing_saves()
         self.saves_plot(self.near_deaths, self.save_healers, save_path=self.plot_path)
