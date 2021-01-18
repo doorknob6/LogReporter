@@ -146,7 +146,7 @@ class HealingSaves(Report):
 
         try:
             report_title = f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')} {self.title} Healing Saves<br><br><br>"
-            report_title = f'{report_title}<span style="font-size: 12px;align=right">Near death counted at {self.near_death_percentage} %</span><br>'
+            report_title = f'{report_title}<span style="font-size: 12px;align=right">Near death counted under {self.near_death_percentage} %</span><br>'
             report_title = f'{report_title}<span style="font-size: 12px;align=right">Death Timeout {self.death_timeout / 1000} s</span><br>'
             report_title = f'{report_title}<span style="font-size: 12px;align=right">Heal Timeout  {self.heal_timeout / 1000} s</span><br>'
             report_title = f'{report_title}<span style="font-size: 12px;align=right">Heal Treshold {self.heal_treshold} hp</span>'
