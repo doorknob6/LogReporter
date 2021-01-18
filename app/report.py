@@ -1,12 +1,12 @@
 
-
 class Report():
 
-    def __init__(self, report, api):
+    def __init__(self, report, api, stored_figures_path=None):
         for key, item in report.items():
             self.__setattr__(key, item)
         self.api = api
         self.fights = self.api.get_report_fights(self.id)
+        self.stored_figures_path = stored_figures_path
 
     def get_fight_names(self, fights):
         fight_names = {}
@@ -47,3 +47,4 @@ class Report():
                 for fight in self.fights['fights']:
                     if fight['start_time'] <= event['timestamp'] <= fight['end_time']:
                         return fight['name']
+        return None

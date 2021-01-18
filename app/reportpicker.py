@@ -60,7 +60,7 @@ class Reportpicker():
                                             report = reports[num_sel - 1]
                                             print('\nReport selected: ')
                                             line = f'\t[{num_sel:>3}]\t'
-                                            line += f" {datetime.fromtimestamp(report['start']/1000).strftime(r'%Y %a %d %b')} \t"
+                                            line += f" {datetime.fromtimestamp(report['start']/1000).strftime(r'%b %a %d %Y')} \t"
                                             line += f" {report['id']} \t"
                                             line += f" {report['title']}"
                                             print(line)
