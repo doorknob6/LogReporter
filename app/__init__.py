@@ -2,9 +2,7 @@ import os
 from WCLApi import WCLApi
 from app.config import Config
 from app.reportpicker import Reportpicker
-from app.report import Report
-from app.healing.healing_saves import HealingSaves
-from app.healing.healing_snipes import HealingSnipes
+from app.healing import HealingSaves, HealingSnipes, HealingManaConsumes
 
 
 class Main():
@@ -18,8 +16,13 @@ class Main():
         self.api = WCLApi(self.wcl_config.content.api_key, query_dir=self.query_dir)
         self.report = Reportpicker(self.wcl_config, api=self.api).pick_loop()
 
-        self.healing_snipes = HealingSnipes(self.report, self.api, fig_dir=self.figures_dir, healing_spells=self.healing_spells.content)
-        self.healing_saves = HealingSaves(self.report, self.api, fig_dir=self.figures_dir)
+        # self.healing_snipes = HealingSnipes(self.report, self.api, fig_dir=self.figures_dir, healing_spells=self.healing_spells.content)
+        # self.healing_saves = HealingSaves(self.report, self.api, fig_dir=self.figures_dir)
+        self.healing_mana_consumes = HealingManaConsumes(self.report, self.api,
+                                                            fig_dir=self.figures_dir,
+                                                            healing_consumes=self.healing_consumes.content,
+                                                            server_name=self.wcl_config.content.server)
+
 
     def read_configs(self, config_dir):
         assert os.path.isdir(config_dir), f'The given config folder path is not a directory: {config_dir}'

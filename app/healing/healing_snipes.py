@@ -15,11 +15,10 @@ class HealingSnipes(Report):
     def __init__(self, report, api, fig_dir=None, healing_spells=None):
         Report.__init__(self, report, api, fig_dir=fig_dir)
 
-        assert healing_spells is not None, "Please provide a dict with valid healing spells."
+        assert healing_spells is not None, "Please provide a list with healing_spell dataclasses."
 
-        print("\n\tRetrieving and sorting data ...")
+        print("\n\tRetrieving and sorting data ...\n")
 
-        print()
         bar = tqdm(total=5)
 
         self.fight_names = self.get_fight_names(self.fights)
@@ -44,9 +43,9 @@ class HealingSnipes(Report):
 
         print("\n\tData retrieved")
 
-        self.snipe_timeout = self.get_input(f"{'snipe timeout':<20}", 400, unit='ms')
-        self.snipe_threshold = self.get_input(f"{'snipe threshold':<20}", 700, unit='hp')
-        self.overhealing_treshold = self.get_input(f"{'overhealing treshold':<20}", 500, 'hp')
+        self.snipe_timeout = self.get_input(f"{'snipe timeout':<25}", 400, unit='ms')
+        self.snipe_threshold = self.get_input(f"{'snipe threshold':<25}", 700, unit='hp')
+        self.overhealing_treshold = self.get_input(f"{'overhealing treshold':<25}", 500, 'hp')
 
         print()
 
@@ -154,18 +153,18 @@ class HealingSnipes(Report):
                                     snipes.append(h)
         return snipes
 
-    def is_snipe(self, base_heal, snipe_heal, snipe_timeout,):
+    def is_snipe(base_heal, snipe_heal, snipe_timeout,):
         snipe_min = base_heal['timestamp'] - base_heal['spell'].duration + snipe_timeout
         snipe_max = base_heal['timestamp'] - snipe_heal['spell'].duration
         snipe_t = snipe_heal['timestamp'] - snipe_heal['spell'].duration
         return True if snipe_min <= snipe_t <= snipe_max else False
 
-    def trunc_list(self, n, delta, list_to_trunc):
+    def trunc_list(n, delta, list_to_trunc):
         n_0 = n - delta if n - delta > 0 else 0
         n_1 = n_0 + delta if n_0 + delta < len(list_to_trunc) else len(list_to_trunc)
         return list_to_trunc[n_0:n_1]
 
-    def spell_ids(self, healing_spells):
+    def spell_ids(healing_spells):
         spells = {}
         for spell in healing_spells:
             spells.update({spell.spell_id : spell})

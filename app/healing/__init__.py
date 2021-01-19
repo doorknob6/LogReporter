@@ -1,6 +1,3 @@
-from WCLApi import WCLApi
-
-class Healing():
-
-    def __init__(self, config):
-        pass
+from app.healing.healing_saves import HealingSaves
+from app.healing.healing_snipes import HealingSnipes
+from app.healing.healing_mana_consumes import HealingManaConsumes

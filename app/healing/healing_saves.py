@@ -15,9 +15,8 @@ class HealingSaves(Report):
     def __init__(self, report, api, fig_dir=None):
         Report.__init__(self, report, api, fig_dir=fig_dir)
 
-        print("\n\tRetrieving and sorting data ...")
+        print("\n\tRetrieving and sorting data ...\n")
 
-        print()
         bar = tqdm(total=8)
 
         self.fight_names = self.get_fight_names(self.fights)
@@ -56,10 +55,10 @@ class HealingSaves(Report):
 
         print("\n\tData retrieved")
 
-        self.near_death_percentage = self.get_input(f"{'near death percentage':<21}", 15, unit='%')
-        self.death_timeout = self.get_input(f"{'death timeout':<21}", 8000, 'ms')
-        self.heal_timeout = self.get_input(f"{'heal timeout':<21}", 3000, 'ms')
-        self.heal_treshold = self.get_input(f"{'heal treshold':<21}", 800, 'hp')
+        self.near_death_percentage = self.get_input(f"{'near death percentage':<25}", 15, unit='%')
+        self.death_timeout = self.get_input(f"{'death timeout':<25}", 8000, 'ms')
+        self.heal_timeout = self.get_input(f"{'heal timeout':<25}", 3000, 'ms')
+        self.heal_treshold = self.get_input(f"{'heal treshold':<25}", 800, 'hp')
 
         self.plot_path = os.path.join(self.fig_dir, self.saves_plot_name()) if self.saves_plot_name() is not None else None
 

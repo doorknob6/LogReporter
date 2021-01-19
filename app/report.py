@@ -34,7 +34,14 @@ class Report():
         while True:
             i = input(f"Input {input_variable} [Enter to Accept]: {standard_val:>5}{unit} : ")
             if i:
-                i = int(i.strip(unit))
+                try:
+                    i = int(i.strip(unit))
+                except ValueError:
+                    try:
+                        i = float(i.strip(unit))
+                        i = int(i)
+                    except ValueError:
+                        i = i.strip(unit)
                 return i
             else:
                 return standard_val
