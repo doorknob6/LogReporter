@@ -1,4 +1,5 @@
 
+
 class Report():
 
     def __init__(self, report, api, fig_dir=None):

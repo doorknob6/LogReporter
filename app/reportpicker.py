@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 from WCLApi import WCLApi
 
+
 class Reportpicker():
 
     def __init__(self, wcl_config, api=None):
@@ -32,7 +33,7 @@ class Reportpicker():
                 if input_server:
                     self.config.content.server = input_server
                     if self.config.content.guild:
-                        i =input(f'Input Guild [Enter to accept]: {self.config.content.guild} : ')
+                        i =input(f'Input Guild  [Enter to accept]: {self.config.content.guild} : ')
                         input_guild = i if i else self.config.content.guild
                     else:
                         input_guild = input('Input Guild: ')

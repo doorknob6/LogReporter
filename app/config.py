@@ -2,6 +2,7 @@ import os
 import json
 from app.configs import config_mapping
 
+
 class Config():
 
     def __init__(self, file_path):

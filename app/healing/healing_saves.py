@@ -10,7 +10,6 @@ from plotly.express import colors
 from itertools import cycle
 
 
-
 class HealingSaves(Report):
 
     def __init__(self, report, api, fig_dir=None):
@@ -57,10 +56,10 @@ class HealingSaves(Report):
 
         print("\n\tData retrieved")
 
-        self.near_death_percentage = self.get_input("near death percentage", 15, unit='%')
-        self.death_timeout = self.get_input("death timeout", 8000, 'ms')
-        self.heal_timeout = self.get_input("heal timeout", 3000, 'ms')
-        self.heal_treshold = self.get_input("heal treshold", 800, 'hp')
+        self.near_death_percentage = self.get_input(f"{'near death percentage':<21}", 15, unit='%')
+        self.death_timeout = self.get_input(f"{'death timeout':<21}", 8000, 'ms')
+        self.heal_timeout = self.get_input(f"{'heal timeout':<21}", 3000, 'ms')
+        self.heal_treshold = self.get_input(f"{'heal treshold':<21}", 800, 'hp')
 
         self.plot_path = os.path.join(self.fig_dir, self.saves_plot_name()) if self.saves_plot_name() is not None else None
 
@@ -90,44 +89,7 @@ class HealingSaves(Report):
 
                             if saves:
 
-                                damage.update({'saves' : saves})
-                                damage.update({'timeStamp' : datetime.fromtimestamp((self.start + damage['timestamp'])/1000)})
-                                damage.update({'timeString' : damage['timeStamp'].strftime(r'%H:%M:%S')})
-                                self.near_deaths.append(damage)
-
-                                target_name = self.friendly_names[damage['targetID']]
-                                damage.update({'targetName' : target_name})
-                                fight_name = self.get_fight_name(damage)
-
-                                damage.update({'fightName' : fight_name})
-
-                                fight_str = f"During {fight_name} - "
-                                save_amount = 0
-
-                                for save in saves:
-                                    save_amount += save['amount']
-                                    save.update({'saveDamage' : damage})
-                                    save.update({'fightName' : fight_name})
-                                    healer = self.friendly_names[save['sourceID']]
-                                    save.update({'healerName' : healer})
-                                    save.update({'targetName' : target_name})
-                                    save.update({'dateTime' : datetime.fromtimestamp((self.start + save['timestamp'])/1000)})
-                                    save.update({'timeString' : save['dateTime'].strftime(r'%H:%M:%S')})
-                                    save.update({'eventString' : f"{save['timeString']} {healer} saved {target_name} at {damage['hitPoints']}% hp using {save['ability']['name']} for {save['amount']} during {fight_name}"})
-                                    if healer in self.save_healers:
-                                        self.save_healers[healer].update({'healing amount' : self.save_healers[healer]['healing amount'] + save['amount']})
-                                        self.save_healers[healer]['saves'].append(save)
-                                        self.save_healers[healer].update({'completeString' : f"{healer} : saved people {len(self.save_healers[healer]['saves'])} times for {self.save_healers[healer]['healing amount']} healing total"})
-                                    else:
-                                        self.save_healers.update({healer : {'healing amount' : save['amount'], 'saves' : [save]}})
-                                        self.save_healers[healer].update({'completeString' : f"{healer} : saved people {len(self.save_healers[healer]['saves'])} times for {self.save_healers[healer]['healing amount']} healing total"})
-
-                                saves_str = ', '.join([f"{s['healerName']} : {s['amount']}" for s in saves])
-                                damage_string = f"{damage['timeString']}: {fight_str}Near death of {target_name} with {damage['hitPoints']}% hp saved by {saves_str}"
-                                damage.update({'eventString' : damage_string})
-
-                                damage.update({'amount' : save_amount})
-                                print(damage_string)
+                                self.process_saves(damage, saves)
 
         print()
 
@@ -135,6 +97,59 @@ class HealingSaves(Report):
 
         for healer in self.save_healers:
             print(self.save_healers[healer]['completeString'])
+
+    def process_saves(self, damage, saves):
+
+        damage.update({'saves' : saves})
+        damage.update({'timeStamp' : datetime.fromtimestamp((self.start + damage['timestamp'])/1000)})
+        damage.update({'timeString' : damage['timeStamp'].strftime(r'%H:%M:%S')})
+
+        self.near_deaths.append(damage)
+
+        target_name = self.friendly_names[damage['targetID']]
+        damage.update({'targetName' : target_name})
+        fight_name = self.get_fight_name(damage)
+
+        damage.update({'fightName' : fight_name})
+
+        fight_str = f"During {fight_name} - "
+        save_amount = 0
+
+        for save in saves:
+
+            save_amount += save['amount']
+            save.update({'saveDamage' : damage})
+            save.update({'fightName' : fight_name})
+
+            healer = self.friendly_names[save['sourceID']]
+
+            save.update({'healerName' : healer})
+            save.update({'targetName' : target_name})
+            save.update({'dateTime' : datetime.fromtimestamp((self.start + save['timestamp'])/1000)})
+            save.update({'timeString' : save['dateTime'].strftime(r'%H:%M:%S')})
+            save.update({'eventString' : f"{save['timeString']} {healer} saved {target_name} at {damage['hitPoints']}% hp using " \
+                                            f"{save['ability']['name']} for {save['amount']} during {fight_name}"})
+
+            if healer in self.save_healers:
+
+                self.save_healers[healer].update({'healing amount' : self.save_healers[healer]['healing amount'] + save['amount']})
+                self.save_healers[healer]['saves'].append(save)
+                self.save_healers[healer].update({'completeString' : f"{healer} : saved people {len(self.save_healers[healer]['saves'])} " \
+                                                                        f"times for {self.save_healers[healer]['healing amount']} healing total"})
+
+            else:
+
+                self.save_healers.update({healer : {'healing amount' : save['amount'], 'saves' : [save]}})
+                self.save_healers[healer].update({'completeString' : f"{healer} : saved people {len(self.save_healers[healer]['saves'])} " \
+                                                                        f"times for {self.save_healers[healer]['healing amount']} healing total"})
+
+        saves_str = ', '.join([f"{s['healerName']} : {s['amount']}" for s in saves])
+        damage_string = f"{damage['timeString']}: {fight_str}Near death of {target_name} with {damage['hitPoints']}% hp saved by {saves_str}"
+        damage.update({'eventString' : damage_string})
+
+        damage.update({'amount' : save_amount})
+
+        print(damage_string)
 
     def saves_plot(self, events, healers, save_path=None):
 
@@ -146,10 +161,14 @@ class HealingSaves(Report):
 
         try:
             report_title = f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')} {self.title} Healing Saves<br><br><br>"
-            report_title = f'{report_title}<span style="font-size: 12px;align=right">Near death counted under {self.near_death_percentage} %</span><br>'
-            report_title = f'{report_title}<span style="font-size: 12px;align=right">Death Timeout {self.death_timeout / 1000} s</span><br>'
-            report_title = f'{report_title}<span style="font-size: 12px;align=right">Heal Timeout  {self.heal_timeout / 1000} s</span><br>'
-            report_title = f'{report_title}<span style="font-size: 12px;align=right">Heal Treshold {self.heal_treshold} hp</span>'
+            report_title = f'{report_title}<span style="font-size: 12px;align=right">' \
+                            f'Near death counted under {self.near_death_percentage} %</span><br>'
+            report_title = f'{report_title}<span style="font-size: 12px;align=right">' \
+                            f'Death Timeout {self.death_timeout / 1000} s</span><br>'
+            report_title = f'{report_title}<span style="font-size: 12px;align=right">' \
+                            f'Heal Timeout  {self.heal_timeout / 1000} s</span><br>'
+            report_title = f'{report_title}<span style="font-size: 12px;align=right">' \
+                            f'Heal Treshold {self.heal_treshold} hp</span>'
         except AttributeError:
             report_title = ''
 
@@ -191,6 +210,7 @@ class HealingSaves(Report):
             fig.add_trace(go.Bar(name=healer,
                                     y=[healer],
                                     x=[len(healers[healer]['saves'])],
+                                    hovertext=[healers[healer]['completeString']],
                                     orientation='h',
                                     legendgroup=healer,
                                     showlegend=False,
