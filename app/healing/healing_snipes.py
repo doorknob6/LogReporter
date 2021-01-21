@@ -12,14 +12,14 @@ from itertools import cycle
 
 class HealingSnipes(Report):
 
-    def __init__(self, report, api, fig_dir=None, healing_spells=None):
+    def __init__(self, report, api, fig_dir=None, healing_spells=None, full_report=False):
         Report.__init__(self, report, api, fig_dir=fig_dir)
 
         assert healing_spells is not None, "Please provide a list with healing_spell dataclasses."
 
         print("\n\tRetrieving and sorting data ...\n")
 
-        bar = tqdm(total=5)
+        bar = tqdm(total=3)
 
         self.fight_names = self.get_fight_names(self.fights)
 
@@ -41,7 +41,9 @@ class HealingSnipes(Report):
 
         bar.update(1)
 
-        print("\n\tData retrieved")
+        bar.close()
+
+        print("\n\tData retrieved.\n")
 
         self.snipe_timeout = self.get_input(f"{'snipe timeout':<25}", 400, unit='ms')
         self.snipe_threshold = self.get_input(f"{'snipe threshold':<25}", 700, unit='hp')
@@ -53,7 +55,7 @@ class HealingSnipes(Report):
 
         self.healing_snipes()
 
-        self.snipes_plot(self.sniped_heals, self.max_snipers, self.max_sniped, save_path=self.plot_path)
+        self.plot = self.snipes_plot(self.sniped_heals, self.max_snipers, self.max_sniped, save_path=self.plot_path, full_report=full_report)
 
         print()
 
@@ -153,18 +155,18 @@ class HealingSnipes(Report):
                                     snipes.append(h)
         return snipes
 
-    def is_snipe(base_heal, snipe_heal, snipe_timeout,):
+    def is_snipe(self, base_heal, snipe_heal, snipe_timeout,):
         snipe_min = base_heal['timestamp'] - base_heal['spell'].duration + snipe_timeout
         snipe_max = base_heal['timestamp'] - snipe_heal['spell'].duration
         snipe_t = snipe_heal['timestamp'] - snipe_heal['spell'].duration
         return True if snipe_min <= snipe_t <= snipe_max else False
 
-    def trunc_list(n, delta, list_to_trunc):
+    def trunc_list(self, n, delta, list_to_trunc):
         n_0 = n - delta if n - delta > 0 else 0
         n_1 = n_0 + delta if n_0 + delta < len(list_to_trunc) else len(list_to_trunc)
         return list_to_trunc[n_0:n_1]
 
-    def spell_ids(healing_spells):
+    def spell_ids(self, healing_spells):
         spells = {}
         for spell in healing_spells:
             spells.update({spell.spell_id : spell})
@@ -179,13 +181,14 @@ class HealingSnipes(Report):
                                             self.start,
                                             self.end]), "Please instantiate the class."
 
-    def snipes_plot(self, events, snipers, snipeds, save_path=None):
+    def snipes_plot(self, events, snipers, snipeds, save_path=None, full_report=False):
 
-        if save_path is not None:
-            if os.path.isfile(save_path):
-                if os.path.splitext(save_path)[-1] == '.html':
-                    webbrowser.open(f'file://{save_path}', new=2)
-                    return
+        if not full_report:
+            if save_path is not None:
+                if os.path.isfile(save_path):
+                    if os.path.splitext(save_path)[-1] == '.html':
+                        webbrowser.open(f'file://{save_path}', new=2)
+                        return
 
         try:
             report_title = f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')} {self.title}" \
@@ -216,10 +219,10 @@ class HealingSnipes(Report):
         fig = make_subplots(rows=2, cols=2,
                             subplot_titles=('Snipes', "Snipes per Healer", "Got Sniped", "Got Sniped per Healer"),
                             column_widths=[0.7, 0.3],
-                            horizontal_spacing=0.05,
-                            vertical_spacing=0.05)
+                            horizontal_spacing=0.065,
+                            vertical_spacing=0.075)
 
-        palette = cycle(colors.qualitative.Plotly)
+        palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
         for sniper in snipers:
             timestamps = np.array([s['snipedHeal']['timeStamp'] for s in snipers[sniper]['snipes']])
@@ -245,8 +248,25 @@ class HealingSnipes(Report):
                                     marker_color=snipers[sniper]['markerColor']),
                                     row=1, col=2)
 
-        fig.update_xaxes(range=[self.start, self.end], row=1, col=1)
-        fig.update_yaxes(ticksuffix='  ', row=1, col=2)
+        fig.update_xaxes(range=[self.start, self.end], mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=1, col=1)
+        fig.update_yaxes(mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=1, col=1)
+
+        fig.update_yaxes(ticksuffix='  ', mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=1, col=2)
+        fig.update_xaxes(mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=1, col=2)
 
         for sniped in snipeds:
             timestamps = np.array([s['snipedHeal']['timeStamp'] for s in snipeds[sniped]['snipes']])
@@ -276,17 +296,39 @@ class HealingSnipes(Report):
                                     marker_color=snipeds[sniped]['markerColor']),
                                     row=2, col=2)
 
-        fig.update_xaxes(range=[self.start, self.end], row=2, col=1)
-        fig.update_yaxes(ticksuffix='  ', row=2, col=2)
+        fig.update_xaxes(range=[self.start, self.end], mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=2, col=1)
+        fig.update_yaxes(mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=2, col=1)
+
+        fig.update_yaxes(ticksuffix='  ', mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=2, col=2)
+        fig.update_xaxes(mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=2, col=2)
 
         fig.update_layout(barmode='stack',
-                          plot_bgcolor='#fcfcfc',
+                          paper_bgcolor=self.paper_bgcolor,
+                          plot_bgcolor=self.plot_bgcolor,
+                          font=go.layout.Font(family='Arial', color=self.plot_textcolor),
                           title=report_title)
 
         if save_path is not None:
             fig.write_html(save_path, include_plotlyjs='cdn')
 
-        fig.show()
+        if full_report:
+            return fig
+        else:
+            fig.show()
 
     def snipes_plot_name(self):
         try:

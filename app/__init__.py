@@ -1,4 +1,5 @@
 import os
+import webbrowser
 from WCLApi import WCLApi
 from app.config import Config
 from app.reportpicker import Reportpicker
@@ -16,12 +17,22 @@ class Main():
         self.api = WCLApi(self.wcl_config.content.api_key, query_dir=self.query_dir)
         self.report = Reportpicker(self.wcl_config, api=self.api).pick_loop()
 
-        # self.healing_snipes = HealingSnipes(self.report, self.api, fig_dir=self.figures_dir, healing_spells=self.healing_spells.content)
-        # self.healing_saves = HealingSaves(self.report, self.api, fig_dir=self.figures_dir)
+
+        self.healing_saves = HealingSaves(self.report, self.api, fig_dir=self.figures_dir, full_report=True)
+        self.healing_snipes = HealingSnipes(self.report, self.api, fig_dir=self.figures_dir, healing_spells=self.healing_spells.content, full_report=True)
         self.healing_mana_consumes = HealingManaConsumes(self.report, self.api,
                                                             fig_dir=self.figures_dir,
                                                             healing_consumes=self.healing_consumes.content,
-                                                            server_name=self.wcl_config.content.server)
+                                                            server_name=self.wcl_config.content.server,
+                                                            full_report=True)
+
+        self.report_path = os.path.join(self.figures_dir, f'healing_report_{self.healing_snipes.id}.html')
+        with open(self.report_path, 'a') as f:
+            f.write(self.healing_saves.plot.to_html(full_html=False, include_plotlyjs='cdn'))
+            f.write(self.healing_snipes.plot.to_html(full_html=False, include_plotlyjs='cdn'))
+            f.write(self.healing_mana_consumes.plot.to_html(full_html=False, include_plotlyjs='cdn'))
+
+        webbrowser.open(f'file://{self.report_path}', new=2)
 
 
     def read_configs(self, config_dir):

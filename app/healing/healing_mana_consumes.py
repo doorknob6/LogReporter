@@ -1,16 +1,19 @@
-from WCLApi import WCLApi
+import os
+import numpy as np
+import plotly.graph_objects as go
+import webbrowser
 from NexusApi import NexusApi, Price
-from datetime import datetime, timedelta
+from datetime import datetime
 from app.report import Report
 from tqdm import tqdm
-import json
-import os
-import math
+from plotly.subplots import make_subplots
+from plotly.express import colors
+from itertools import cycle
 
 
 class HealingManaConsumes(Report):
 
-    def __init__(self, report, wcl_api, fig_dir=None, classes=None, nexus_api=None, healing_consumes=None, server_name=None):
+    def __init__(self, report, wcl_api, fig_dir=None, classes=None, nexus_api=None, healing_consumes=None, server_name=None, full_report=False):
         Report.__init__(self, report, wcl_api, fig_dir=fig_dir)
 
         assert healing_consumes is not None, "Please provide a list with healing_consume dataclasses."
@@ -37,9 +40,15 @@ class HealingManaConsumes(Report):
 
         self.consume_events = self.get_consume_events(self.consumes, self.classes)
 
-        print()
+        print("\n\tData retrieved.\n")
+
+        self.plot_path = os.path.join(self.fig_dir, self.consumes_plot_name()) if self.consumes_plot_name() is not None else None
 
         self.process_consumes()
+
+        self.plot = self.consumes_plot(self.consume_events, self.healers, self.consumes, save_path=self.plot_path, full_report=full_report)
+
+        print()
 
     def get_consume_prices(self, consume_list, nexus_server_id):
 
@@ -68,7 +77,7 @@ class HealingManaConsumes(Report):
 
         self.assert_instantiated()
 
-        bar = tqdm(desc='Reading Event from Warcraftlogs', total=len(consume_list)*len(classes))
+        bar = tqdm(desc='Reading Events from Warcraftlogs', total=len(consume_list)*len(classes))
 
         events = []
         for consume in consume_list:
@@ -79,6 +88,8 @@ class HealingManaConsumes(Report):
                                                     sourceclass=game_class)
                 events += resp['events']
                 bar.update(1)
+
+        bar.close()
 
         events = sorted(events, key=lambda item: item['timestamp'])
 
@@ -93,8 +104,8 @@ class HealingManaConsumes(Report):
         self.total_cost = Price(0)
 
         for c in self.consume_events:
-            c.update({'dateTime' : datetime.fromtimestamp((self.start + c['timestamp'])/1000)})
-            c.update({'timeString' : c['dateTime'].strftime(r'%H:%M:%S')})
+            c.update({'timeStamp' : datetime.fromtimestamp((self.start + c['timestamp'])/1000)})
+            c.update({'timeString' : c['timeStamp'].strftime(r'%H:%M:%S')})
             c.update({'healer' : self.friendly_names[c['sourceID']]})
             c.update({'fightName' : self.get_fight_name(c)})
 
@@ -102,7 +113,7 @@ class HealingManaConsumes(Report):
 
             c.update({'consume' : consume})
             c.update({'eventString' : f"{c['timeString']} {c['healer']} used a {consume.name} " \
-                                            f"during {c['fightName']}"})
+                                            f"during {c['fightName']}, costing {consume.cost_price}"})
 
             print(c['eventString'])
 
@@ -126,12 +137,15 @@ class HealingManaConsumes(Report):
                 else:
                     self.healers[c['healer']]['consumes'].update({consume.name : 1})
 
+                self.healers[c['healer']]['consumeEvents'].append(c)
+
                 self.healers[c['healer']]['amount'] += 1
 
             else:
 
                 self.healers.update({c['healer'] : {'cost' : consume.cost_price,
                                                     'consumes' : {consume.name : 1},
+                                                    'consumeEvents' : [c],
                                                     'amount' : 1}})
 
             self.healers[c['healer']].update({'consumeString' :
@@ -158,7 +172,135 @@ class HealingManaConsumes(Report):
             try:
                 print(consume.complete_string)
             except AttributeError:
-                pass
+                print(f'{consume.name} has not been used.')
+
+    def consumes_plot(self, events, healers, consumes, save_path=None, full_report=False):
+
+        if not full_report:
+            if save_path is not None:
+                if os.path.isfile(save_path):
+                    if os.path.splitext(save_path)[-1] == '.html':
+                        webbrowser.open(f'file://{save_path}', new=2)
+                        return
+
+        try:
+            report_title = f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')} {self.title}" \
+                            " Healer Mana Consumes<br>"
+            report_title = f'{report_title}<span style="font-size: 12px;align=right">' \
+                            f'Total Gold Spent on Mana Consumes is <b>{self.total_cost}</b></span><br>'
+
+        except AttributeError:
+            report_title = ''
+
+        try:
+            if not self.start:
+                self.start = 0
+        except AttributeError:
+            self.start = 0
+
+        try:
+            if not self.end:
+                self.end = events[-1] + 3e5
+            else:
+                self.end += 3e5
+        except AttributeError:
+            self.end = events[-1] + 3e5
+
+        fig = make_subplots(rows=2, cols=2,
+                            specs=[[{"colspan": 2}, None], [{}, {}]],
+                            subplot_titles=('Mana Consumes Timeline', "Total Mana Consumes", "Mana Consumes per Healer"),
+                            column_widths=[0.5, 0.5],
+                            horizontal_spacing=0.065,
+                            vertical_spacing=0.075)
+
+        palette = cycle(getattr(colors.qualitative, self.plot_palette))
+
+        for healer in healers:
+            timestamps = np.array([c['timeStamp'] for c in healers[healer]['consumeEvents']])
+            event_vals = [c['consume'].cost_price.price / 10000 for c in healers[healer]['consumeEvents']]
+            event_strings = [c['eventString'] for c in healers[healer]['consumeEvents']]
+            healers[healer].update({'markerColor' : next(palette)})
+            fig.add_trace(go.Bar(name=healer,
+                                    x=timestamps,
+                                    y=event_vals,
+                                    hovertext=event_strings,
+                                    width=(self.end - self.start)/600,
+                                    legendgroup=healer,
+                                    marker_color=healers[healer]['markerColor']),
+                                    row=1, col=1)
+
+        for consume in reversed(consumes):
+            try:
+                fig.add_trace(go.Bar(name=consume.name,
+                                        y=[consume.name],
+                                        x=[consume.total_cost.price/10000],
+                                        hovertext=[consume.complete_string],
+                                        orientation='h',
+                                        legendgroup=consume.name,
+                                        marker_color=next(palette)),
+                                        row=2, col=1)
+            except AttributeError:
+                print(f'{consume.name} has not been used.')
+
+        for healer in reversed(healers):
+            fig.add_trace(go.Bar(name=healer,
+                                    y=[healer],
+                                    x=[healers[healer]['cost'].price / 10000],
+                                    hovertext=[healers[healer]['completeString']],
+                                    orientation='h',
+                                    legendgroup=healer,
+                                    showlegend=False,
+                                    marker_color=healers[healer]['markerColor']),
+                                    row=2, col=2)
+
+        fig.update_xaxes(range=[self.start, self.end], mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=1, col=1)
+        fig.update_yaxes(ticksuffix='g', mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=1, col=1)
+        fig.update_yaxes(ticksuffix='  ', mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=2, col=1)
+        fig.update_xaxes(ticksuffix='g', mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=2, col=1)
+        fig.update_yaxes(ticksuffix='  ', mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=2, col=2)
+        fig.update_xaxes(ticksuffix='g', mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=2, col=2)
+
+        fig.update_layout(barmode='stack',
+                          paper_bgcolor=self.paper_bgcolor,
+                          plot_bgcolor=self.plot_bgcolor,
+                          font=go.layout.Font(family='Arial', color=self.plot_textcolor),
+                          title=report_title)
+
+        if save_path is not None:
+            fig.write_html(save_path, include_plotlyjs='cdn')
+
+        if full_report:
+            return fig
+        else:
+            fig.show()
+
+    def consumes_plot_name(self):
+        try:
+            plot_name = f'healing_mana_consumes_{self.id}.html'
+            return plot_name
+        except AttributeError:
+            return None
 
     def assert_instantiated(self):
         assert all(t is not None for t in [self.nexus_api,

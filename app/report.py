@@ -2,12 +2,20 @@
 
 class Report():
 
-    def __init__(self, report, api, fig_dir=None):
+    def __init__(self, report, api, fig_dir=None,
+                 paper_bgcolor='#0E0E0E', plot_bgcolor='#141414', plot_palette='Plotly',
+                 plot_axiscolor='#555555', plot_textcolor='#FFFFFF'):
         for key, item in report.items():
             self.__setattr__(key, item)
         self.api = api
         self.fig_dir = fig_dir
         self.fights = self.api.get_report_fights(self.id)
+
+        self.paper_bgcolor = paper_bgcolor
+        self.plot_bgcolor = plot_bgcolor
+        self.plot_palette = plot_palette
+        self.plot_axiscolor = plot_axiscolor
+        self.plot_textcolor = plot_textcolor
 
     def get_fight_names(self, fights):
         fight_names = {}

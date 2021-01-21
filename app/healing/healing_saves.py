@@ -12,7 +12,7 @@ from itertools import cycle
 
 class HealingSaves(Report):
 
-    def __init__(self, report, api, fig_dir=None):
+    def __init__(self, report, api, fig_dir=None, full_report=False):
         Report.__init__(self, report, api, fig_dir=fig_dir)
 
         print("\n\tRetrieving and sorting data ...\n")
@@ -53,7 +53,7 @@ class HealingSaves(Report):
 
         bar.close()
 
-        print("\n\tData retrieved")
+        print("\n\tData retrieved.\n")
 
         self.near_death_percentage = self.get_input(f"{'near death percentage':<25}", 15, unit='%')
         self.death_timeout = self.get_input(f"{'death timeout':<25}", 8000, 'ms')
@@ -62,8 +62,10 @@ class HealingSaves(Report):
 
         self.plot_path = os.path.join(self.fig_dir, self.saves_plot_name()) if self.saves_plot_name() is not None else None
 
+        print()
+
         self.healing_saves()
-        self.saves_plot(self.near_deaths, self.save_healers, save_path=self.plot_path)
+        self.plot = self.saves_plot(self.near_deaths, self.save_healers, save_path=self.plot_path, full_report=full_report)
 
         print()
 
@@ -150,13 +152,14 @@ class HealingSaves(Report):
 
         print(damage_string)
 
-    def saves_plot(self, events, healers, save_path=None):
+    def saves_plot(self, events, healers, save_path=None, full_report=False):
 
-        if save_path is not None:
-            if os.path.isfile(save_path):
-                if os.path.splitext(save_path)[-1] == '.html':
-                    webbrowser.open(f'file://{save_path}', new=2)
-                    return
+        if not full_report:
+            if save_path is not None:
+                if os.path.isfile(save_path):
+                    if os.path.splitext(save_path)[-1] == '.html':
+                        webbrowser.open(f'file://{save_path}', new=2)
+                        return
 
         try:
             report_title = f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')} {self.title} Healing Saves<br><br><br>"
@@ -188,9 +191,9 @@ class HealingSaves(Report):
         fig = make_subplots(rows=1, cols=2,
                             subplot_titles=('Near Death Saves', "Saves per Healer"),
                             column_widths=[0.7, 0.3],
-                            horizontal_spacing=0.05)
+                            horizontal_spacing=0.065)
 
-        palette = cycle(colors.qualitative.Plotly)
+        palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
         for healer in healers:
             timestamps = np.array([s['saveDamage']['timeStamp'] for s in healers[healer]['saves']])
@@ -216,18 +219,39 @@ class HealingSaves(Report):
                                     marker_color=healers[healer]['markerColor']),
                                     row=1, col=2)
 
-        fig.update_xaxes(range=[self.start, self.end], row=1, col=1)
-        fig.update_yaxes(ticksuffix='  ', row=1, col=2)
+        fig.update_xaxes(range=[self.start, self.end], mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=1, col=1)
+        fig.update_yaxes(mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=1, col=1)
 
+        fig.update_yaxes(ticksuffix='  ', mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=1, col=2)
+        fig.update_xaxes(mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=1, col=2)
 
         fig.update_layout(barmode='stack',
-                          plot_bgcolor='#fcfcfc',
+                          paper_bgcolor=self.paper_bgcolor,
+                          plot_bgcolor=self.plot_bgcolor,
+                          font=go.layout.Font(family='Arial', color=self.plot_textcolor),
                           title=report_title)
 
         if save_path is not None:
             fig.write_html(save_path, include_plotlyjs='cdn')
 
-        fig.show()
+        if full_report:
+            return fig
+        else:
+            fig.show()
 
     def saves_plot_name(self):
         try:
