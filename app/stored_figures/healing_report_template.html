@@ -1,0 +1,140 @@
+<html>
+<head>
+<style>
+
+body {
+  font-family: Arial;
+  color: #ffffff;
+  background-color: #0E0E0E;
+  margin: auto;
+  height: 95%;
+}
+
+h2 {
+  display: block;
+  font-size: 2em;
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+  margin-left: 0.3em;
+  margin-right: 0.3em;
+  font-weight: bold;
+  text-align: justify;
+}
+
+.report-title {
+  float: left;
+}
+
+.report-properties {
+  float: right;
+}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #555555;
+  background-color: #001525;
+  width: 99.8%;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+  color: #ffffff;
+  margin: auto;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #002040;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #002040;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  width : 100%;
+  border-top: none;
+  background-color: #0E0E0E;
+}
+
+/* Style the plotly graph containers */
+.plotly-container {
+  width: 95%;
+  height: 75%;
+  margin: auto;
+}
+
+/* Style the plotly graphs */
+.plotly-graph-div {
+  width: 1780px;
+  height: 800px;
+  margin:auto;
+}
+
+</style>
+</head>
+<body>
+
+<div>
+<div class="report-title">
+<h2>Healing Report</h2>
+</div>
+<div class="report-properties">
+<h2>Naxxramas - Sun 24 Jan 2021</h2>
+</div>
+</div>
+
+<div class="tab">
+  <button class="tablinks" onclick="openReport(event, 'Guardian Angels')">Guardian Angels</button>
+  <button class="tablinks" onclick="openReport(event, 'Sniper Elite')">Sniper Elite</button>
+  <button class="tablinks" onclick="openReport(event, 'Doping Up')">Doping Up</button>
+  <button class="tablinks" onclick="openReport(event, 'Parses on Tap')">Parses on Tap</button>
+</div>
+
+<!-- Tab content -->
+<div id="Guardian Angels" class="tabcontent">
+
+</div>
+
+<div id="Sniper Elite" class="tabcontent">
+
+</div>
+
+<div id="Doping Up" class="tabcontent">
+
+</div>
+
+<div id="Parses on Tap" class="tabcontent">
+
+</div>
+
+<script>
+function openReport(evt, reportName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(reportName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+</script>
+
+</body>
+</html>

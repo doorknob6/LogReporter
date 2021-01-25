@@ -4,7 +4,7 @@ class Report():
 
     def __init__(self, report, api, fig_dir=None,
                  paper_bgcolor='#0E0E0E', plot_bgcolor='#141414', plot_palette='Plotly',
-                 plot_axiscolor='#555555', plot_textcolor='#FFFFFF', plot_time_barwidth_divisor=1250,
+                 plot_axiscolor='#555555', plot_textcolor='#ffffff', plot_time_barwidth_divisor=1250,
                  plot_time_end_buffer=0):
 
         for key, item in report.items():
