@@ -31,6 +31,11 @@
             "ability_id": 15701,
             "item_id": 11952,
             "name": "Night Dragons Breath"
+        },
+        {
+            "ability_id": 17627,
+            "item_id": 13511,
+            "name": "Flask of Distilled Wisdom"
         }
     ]
 }

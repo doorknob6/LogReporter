@@ -8,6 +8,7 @@ from tqdm import tqdm
 from plotly.subplots import make_subplots
 from plotly.express import colors
 from itertools import cycle
+from copy import copy
 
 
 class HealingSnipes(Report):
@@ -17,6 +18,7 @@ class HealingSnipes(Report):
 
         assert healing_spells is not None, "Please provide a list with healing_spell dataclasses."
 
+        print("\nHealing Snipes")
         print("\n\tRetrieving and sorting data ...\n")
 
         bar = tqdm(total=3)
@@ -51,7 +53,7 @@ class HealingSnipes(Report):
 
         print()
 
-        self.plot_path = os.path.join(self.fig_dir, self.snipes_plot_name()) if self.snipes_plot_name() is not None else None
+        self.plot_path = os.path.join(self.fig_dir, n) if (n:=self.snipes_plot_name()) is not None else None
 
         self.healing_snipes()
 
@@ -94,7 +96,7 @@ class HealingSnipes(Report):
         self.assert_instantiated()
 
         base_heal.update({'snipes' : snipes})
-        base_heal.update({'timeStamp' : datetime.fromtimestamp((self.start + base_heal['timestamp'])/1000)})
+        base_heal.update({'timeStamp' : datetime.fromtimestamp((self.start + base_heal['timestamp'])/1000).replace(microsecond=0)})
         base_heal.update({'timeString' : base_heal['timeStamp'].strftime(r'%H:%M:%S')})
         base_heal.update({'fightName' : self.get_fight_name(base_heal)})
         base_heal.update({'healer' : self.friendly_names[base_heal['sourceID']]})
@@ -103,10 +105,13 @@ class HealingSnipes(Report):
 
         for snipe in snipes:
 
+            if 'snipedHeal' in snipe:
+                snipe = copy(snipe)
+
             snipe.update({'snipedHeal' : base_heal})
             snipe.update({'fightName' : base_heal['fightName']})
             snipe.update({'healer' : self.friendly_names[snipe['sourceID']]})
-            snipe.update({'dateTime' : datetime.fromtimestamp((self.start + snipe['timestamp'])/1000)})
+            snipe.update({'dateTime' : datetime.fromtimestamp((self.start + snipe['timestamp'])/1000).replace(microsecond=0)})
             snipe.update({'timeString' : snipe['dateTime'].strftime(r'%H:%M:%S')})
             snipe.update({'eventString' : f"{snipe['timeString']} {base_heal['healer']}'s {base_heal['ability']['name']} " \
                                             f"sniped by {snipe['healer']} for {snipe['amount']} using {snipe['ability']['name']} " \
@@ -152,10 +157,10 @@ class HealingSnipes(Report):
                             base_heal['spell'] = self.spells[base_heal['ability']['guid']]
                             h['spell'] = self.spells[h['ability']['guid']]
                             if self.is_snipe(base_heal, h, self.snipe_timeout):
-                                    snipes.append(h)
+                                snipes.append(h)
         return snipes
 
-    def is_snipe(self, base_heal, snipe_heal, snipe_timeout,):
+    def is_snipe(self, base_heal, snipe_heal, snipe_timeout):
         snipe_min = base_heal['timestamp'] - base_heal['spell'].duration + snipe_timeout
         snipe_max = base_heal['timestamp'] - snipe_heal['spell'].duration
         snipe_t = snipe_heal['timestamp'] - snipe_heal['spell'].duration
@@ -163,14 +168,7 @@ class HealingSnipes(Report):
 
     def trunc_list(self, n, delta, list_to_trunc):
         n_0 = n - delta if n - delta > 0 else 0
-        n_1 = n_0 + delta if n_0 + delta < len(list_to_trunc) else len(list_to_trunc)
-        return list_to_trunc[n_0:n_1]
-
-    def spell_ids(self, healing_spells):
-        spells = {}
-        for spell in healing_spells:
-            spells.update({spell.spell_id : spell})
-        return spells
+        return list_to_trunc[n_0:n]
 
     def assert_instantiated(self):
         assert all(t is not None for t in [self.spells,
@@ -191,8 +189,10 @@ class HealingSnipes(Report):
                         return
 
         try:
-            report_title = f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')} {self.title}" \
-                            " Healing Snipes<br><br><br>"
+            report_title = '<span style="font-size: 28px">Sniper Elite &nbsp;&nbsp;&nbsp;&nbsp;</span>' \
+                            f'<span style="font-size: 22px"><i>Healing Snipes</i></span><br>' \
+                            f'<span style="font-size: 12px">{self.title} - ' \
+                            f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')}</span><br><br>"
             report_title = f'{report_title}<span style="font-size: 12px;align=right">' \
                             f'Snipe Timeout {self.snipe_timeout / 1000} s</span><br>' \
                             f'<span style="font-size: 12px;align=right">' \
@@ -210,11 +210,11 @@ class HealingSnipes(Report):
 
         try:
             if not self.end:
-                self.end = events[-1] + 3e5
+                self.end = events[-1] + self.plot_time_end_buffer
             else:
-                self.end += 3e5
+                self.end += self.plot_time_end_buffer
         except AttributeError:
-            self.end = events[-1] + 3e5
+            self.end = events[-1] + self.plot_time_end_buffer
 
         fig = make_subplots(rows=2, cols=2,
                             subplot_titles=('Snipes', "Snipes per Healer", "Got Sniped", "Got Sniped per Healer"),
@@ -233,9 +233,10 @@ class HealingSnipes(Report):
                                     x=timestamps,
                                     y=event_vals,
                                     hovertext=event_strings,
-                                    width=(self.end - self.start)/600,
+                                    width=(self.end - self.start)/self.plot_time_barwidth_divisor,
                                     legendgroup=sniper,
-                                    marker_color=snipers[sniper]['markerColor']),
+                                    marker_color=snipers[sniper]['markerColor'],
+                                    marker=dict(line=dict(width=0))),
                                     row=1, col=1)
         for sniper in reversed(snipers):
             fig.add_trace(go.Bar(name=sniper,
@@ -245,7 +246,8 @@ class HealingSnipes(Report):
                                     orientation='h',
                                     legendgroup=sniper,
                                     showlegend=False,
-                                    marker_color=snipers[sniper]['markerColor']),
+                                    marker_color=snipers[sniper]['markerColor'],
+                                    marker=dict(line=dict(width=0))),
                                     row=1, col=2)
 
         fig.update_xaxes(range=[self.start, self.end], mirror=True,
@@ -280,10 +282,11 @@ class HealingSnipes(Report):
                                     x=timestamps,
                                     y=event_vals,
                                     hovertext=event_strings,
-                                    width=(self.end - self.start)/600,
+                                    width=(self.end - self.start)/self.plot_time_barwidth_divisor,
                                     legendgroup=sniped,
                                     showlegend=False,
-                                    marker_color=snipeds[sniped]['markerColor']),
+                                    marker_color=snipeds[sniped]['markerColor'],
+                                    marker=dict(line=dict(width=0))),
                                     row=2, col=1)
         for sniped in reversed(snipeds):
             fig.add_trace(go.Bar(name=sniped,
@@ -293,7 +296,8 @@ class HealingSnipes(Report):
                                     orientation='h',
                                     legendgroup=sniped,
                                     showlegend=False,
-                                    marker_color=snipeds[sniped]['markerColor']),
+                                    marker_color=snipeds[sniped]['markerColor'],
+                                    marker=dict(line=dict(width=0))),
                                     row=2, col=2)
 
         fig.update_xaxes(range=[self.start, self.end], mirror=True,

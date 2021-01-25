@@ -15,6 +15,7 @@ class HealingSaves(Report):
     def __init__(self, report, api, fig_dir=None, full_report=False):
         Report.__init__(self, report, api, fig_dir=fig_dir)
 
+        print("\nHealing Saves")
         print("\n\tRetrieving and sorting data ...\n")
 
         bar = tqdm(total=8)
@@ -60,7 +61,7 @@ class HealingSaves(Report):
         self.heal_timeout = self.get_input(f"{'heal timeout':<25}", 3000, 'ms')
         self.heal_treshold = self.get_input(f"{'heal treshold':<25}", 800, 'hp')
 
-        self.plot_path = os.path.join(self.fig_dir, self.saves_plot_name()) if self.saves_plot_name() is not None else None
+        self.plot_path = os.path.join(self.fig_dir, n) if (n:=self.saves_plot_name()) is not None else None
 
         print()
 
@@ -70,6 +71,9 @@ class HealingSaves(Report):
         print()
 
     def healing_saves(self):
+
+        self.assert_instantiated()
+
         self.near_deaths = []
         self.save_healers = {}
 
@@ -83,10 +87,7 @@ class HealingSaves(Report):
                                     damage['timestamp'] <= d['timestamp'] <= damage['timestamp'] + self.death_timeout]
                         if not death:
 
-                            saves = [h for h in self.healing_events if self.get_target_id(h) == self.get_target_id(damage) and
-                                        damage['timestamp'] <= h['timestamp'] <= damage['timestamp'] + self.heal_timeout and
-                                        not 'overheal' in h and
-                                        h['amount'] > self.heal_treshold]
+                            saves = self.get_saves(damage, self.healing_events, self.heal_timeout, self.heal_treshold)
 
                             if saves:
 
@@ -101,8 +102,10 @@ class HealingSaves(Report):
 
     def process_saves(self, damage, saves):
 
+        self.assert_instantiated()
+
         damage.update({'saves' : saves})
-        damage.update({'timeStamp' : datetime.fromtimestamp((self.start + damage['timestamp'])/1000)})
+        damage.update({'timeStamp' : datetime.fromtimestamp((self.start + damage['timestamp'])/1000).replace(microsecond=0)})
         damage.update({'timeString' : damage['timeStamp'].strftime(r'%H:%M:%S')})
 
         self.near_deaths.append(damage)
@@ -113,7 +116,6 @@ class HealingSaves(Report):
 
         damage.update({'fightName' : fight_name})
 
-        fight_str = f"During {fight_name} - "
         save_amount = 0
 
         for save in saves:
@@ -126,7 +128,7 @@ class HealingSaves(Report):
 
             save.update({'healerName' : healer})
             save.update({'targetName' : target_name})
-            save.update({'dateTime' : datetime.fromtimestamp((self.start + save['timestamp'])/1000)})
+            save.update({'dateTime' : datetime.fromtimestamp((self.start + save['timestamp'])/1000).replace(microsecond=0)})
             save.update({'timeString' : save['dateTime'].strftime(r'%H:%M:%S')})
             save.update({'eventString' : f"{save['timeString']} {healer} saved {target_name} at {damage['hitPoints']}% hp using " \
                                             f"{save['ability']['name']} for {save['amount']} during {fight_name}"})
@@ -145,12 +147,31 @@ class HealingSaves(Report):
                                                                         f"times for {self.save_healers[healer]['healing amount']} healing total"})
 
         saves_str = ', '.join([f"{s['healerName']} : {s['amount']}" for s in saves])
-        damage_string = f"{damage['timeString']}: {fight_str}Near death of {target_name} with {damage['hitPoints']}% hp saved by {saves_str}"
+        damage_string = f"{damage['timeString']}: During {fight_name} - Near death of {target_name} with {damage['hitPoints']}% hp saved by {saves_str}"
         damage.update({'eventString' : damage_string})
 
         damage.update({'amount' : save_amount})
 
         print(damage_string)
+
+    def get_saves(self, damage, healing_events, heal_timeout, heal_treshold):
+
+        saves = []
+
+        n = self.find_time_index(damage['timestamp'], self.healing_events)
+
+        for heal in healing_events[n-15:]:
+
+            if not 'overheal' in heal:
+                if heal['amount'] > heal_treshold:
+                    if self.get_target_id(heal) == self.get_target_id(damage):
+                        if damage['timestamp'] <= heal['timestamp'] <= damage['timestamp'] + heal_timeout:
+                            saves.append(heal)
+
+            if self.is_overshot(damage['timestamp'], heal['timestamp'], heal_timeout):
+                break
+
+        return saves
 
     def saves_plot(self, events, healers, save_path=None, full_report=False):
 
@@ -162,7 +183,10 @@ class HealingSaves(Report):
                         return
 
         try:
-            report_title = f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')} {self.title} Healing Saves<br><br><br>"
+            report_title = '<span style="font-size: 28px">Guardian Angels &nbsp;&nbsp;&nbsp;&nbsp;</span>' \
+                            f'<span style="font-size: 22px"><i>Healing Saves</i></span><br>' \
+                            f'<span style="font-size: 12px">{self.title} - ' \
+                            f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')}</span><br><br>"
             report_title = f'{report_title}<span style="font-size: 12px;align=right">' \
                             f'Near death counted under {self.near_death_percentage} %</span><br>'
             report_title = f'{report_title}<span style="font-size: 12px;align=right">' \
@@ -182,11 +206,11 @@ class HealingSaves(Report):
 
         try:
             if not self.end:
-                self.end = events[-1] + 3e5
+                self.end = events[-1] + self.plot_time_end_buffer
             else:
-                self.end += 3e5
+                self.end += self.plot_time_end_buffer
         except AttributeError:
-            self.end = events[-1] + 3e5
+            self.end = events[-1] + self.plot_time_end_buffer
 
         fig = make_subplots(rows=1, cols=2,
                             subplot_titles=('Near Death Saves', "Saves per Healer"),
@@ -204,9 +228,10 @@ class HealingSaves(Report):
                                     x=timestamps,
                                     y=event_vals,
                                     hovertext=event_strings,
-                                    width=(self.end - self.start)/600,
+                                    width=(self.end - self.start)/self.plot_time_barwidth_divisor,
                                     legendgroup=healer,
-                                    marker_color=healers[healer]['markerColor']),
+                                    marker_color=healers[healer]['markerColor'],
+                                    marker=dict(line=dict(width=0))),
                                     row=1, col=1)
         for healer in reversed(healers):
             fig.add_trace(go.Bar(name=healer,
@@ -216,7 +241,8 @@ class HealingSaves(Report):
                                     orientation='h',
                                     legendgroup=healer,
                                     showlegend=False,
-                                    marker_color=healers[healer]['markerColor']),
+                                    marker_color=healers[healer]['markerColor'],
+                                    marker=dict(line=dict(width=0))),
                                     row=1, col=2)
 
         fig.update_xaxes(range=[self.start, self.end], mirror=True,
@@ -260,6 +286,17 @@ class HealingSaves(Report):
             return plot_name
         except AttributeError:
             return None
+
+    def assert_instantiated(self):
+        assert all(t is not None for t in [self.fight_names,
+                                            self.near_death_percentage,
+                                            self.death_timeout,
+                                            self.heal_timeout,
+                                            self.heal_treshold,
+                                            self.damage_events,
+                                            self.healing_events,
+                                            self.start,
+                                            self.end]), "Please instantiate the class."
 
 if __name__ == '__main__':
     try:

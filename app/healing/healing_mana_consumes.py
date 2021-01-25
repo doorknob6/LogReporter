@@ -20,6 +20,7 @@ class HealingManaConsumes(Report):
 
         self.consumes = healing_consumes
 
+        print("\nHealing Mana Consumes")
         print("\n\tRetrieving and sorting data ...\n")
 
         self.classes = classes if classes is not None else ['Priest', 'Druid', 'Paladin']
@@ -42,7 +43,7 @@ class HealingManaConsumes(Report):
 
         print("\n\tData retrieved.\n")
 
-        self.plot_path = os.path.join(self.fig_dir, self.consumes_plot_name()) if self.consumes_plot_name() is not None else None
+        self.plot_path = os.path.join(self.fig_dir, n) if (n:=self.consumes_plot_name()) is not None else None
 
         self.process_consumes()
 
@@ -104,7 +105,7 @@ class HealingManaConsumes(Report):
         self.total_cost = Price(0)
 
         for c in self.consume_events:
-            c.update({'timeStamp' : datetime.fromtimestamp((self.start + c['timestamp'])/1000)})
+            c.update({'timeStamp' : datetime.fromtimestamp((self.start + c['timestamp'])/1000).replace(microsecond=0)})
             c.update({'timeString' : c['timeStamp'].strftime(r'%H:%M:%S')})
             c.update({'healer' : self.friendly_names[c['sourceID']]})
             c.update({'fightName' : self.get_fight_name(c)})
@@ -184,8 +185,10 @@ class HealingManaConsumes(Report):
                         return
 
         try:
-            report_title = f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')} {self.title}" \
-                            " Healer Mana Consumes<br>"
+            report_title = '<span style="font-size: 28px">Doping Up &nbsp;&nbsp;&nbsp;&nbsp;</span>' \
+                            f'<span style="font-size: 22px"><i>Healing Mana Consumes</i></span><br>' \
+                            f'<span style="font-size: 12px">{self.title} - ' \
+                            f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')}</span><br>"
             report_title = f'{report_title}<span style="font-size: 12px;align=right">' \
                             f'Total Gold Spent on Mana Consumes is <b>{self.total_cost}</b></span><br>'
 
@@ -200,11 +203,11 @@ class HealingManaConsumes(Report):
 
         try:
             if not self.end:
-                self.end = events[-1] + 3e5
+                self.end = events[-1] + self.plot_time_end_buffer
             else:
-                self.end += 3e5
+                self.end += self.plot_time_end_buffer
         except AttributeError:
-            self.end = events[-1] + 3e5
+            self.end = events[-1] + self.plot_time_end_buffer
 
         fig = make_subplots(rows=2, cols=2,
                             specs=[[{"colspan": 2}, None], [{}, {}]],
@@ -224,9 +227,10 @@ class HealingManaConsumes(Report):
                                     x=timestamps,
                                     y=event_vals,
                                     hovertext=event_strings,
-                                    width=(self.end - self.start)/600,
+                                    width=(self.end - self.start)/self.plot_time_barwidth_divisor,
                                     legendgroup=healer,
-                                    marker_color=healers[healer]['markerColor']),
+                                    marker_color=healers[healer]['markerColor'],
+                                    marker=dict(line=dict(width=0))),
                                     row=1, col=1)
 
         for consume in reversed(consumes):
@@ -237,7 +241,8 @@ class HealingManaConsumes(Report):
                                         hovertext=[consume.complete_string],
                                         orientation='h',
                                         legendgroup=consume.name,
-                                        marker_color=next(palette)),
+                                        marker_color=next(palette),
+                                        marker=dict(line=dict(width=0))),
                                         row=2, col=1)
             except AttributeError:
                 print(f'{consume.name} has not been used.')
@@ -250,7 +255,8 @@ class HealingManaConsumes(Report):
                                     orientation='h',
                                     legendgroup=healer,
                                     showlegend=False,
-                                    marker_color=healers[healer]['markerColor']),
+                                    marker_color=healers[healer]['markerColor'],
+                                    marker=dict(line=dict(width=0))),
                                     row=2, col=2)
 
         fig.update_xaxes(range=[self.start, self.end], mirror=True,

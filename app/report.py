@@ -4,7 +4,9 @@ class Report():
 
     def __init__(self, report, api, fig_dir=None,
                  paper_bgcolor='#0E0E0E', plot_bgcolor='#141414', plot_palette='Plotly',
-                 plot_axiscolor='#555555', plot_textcolor='#FFFFFF'):
+                 plot_axiscolor='#555555', plot_textcolor='#FFFFFF', plot_time_barwidth_divisor=1250,
+                 plot_time_end_buffer=0):
+
         for key, item in report.items():
             self.__setattr__(key, item)
         self.api = api
@@ -16,6 +18,8 @@ class Report():
         self.plot_palette = plot_palette
         self.plot_axiscolor = plot_axiscolor
         self.plot_textcolor = plot_textcolor
+        self.plot_time_barwidth_divisor = plot_time_barwidth_divisor
+        self.plot_time_end_buffer = plot_time_end_buffer
 
     def get_fight_names(self, fights):
         fight_names = {}
@@ -64,3 +68,34 @@ class Report():
                     if fight['start_time'] <= event['timestamp'] <= fight['end_time']:
                         return fight['name']
         return None
+
+    def spell_ids(self, healing_spells):
+        spells = {}
+        for spell in healing_spells:
+            spells.update({spell.spell_id : spell})
+        return spells
+
+    def find_time_index(self, base_timestamp, event_list):
+        n = 0
+        while self.is_undershot(base_timestamp, event_list[n]['timestamp']):
+            n = n_1 if (n_1:=n+1000) < len(event_list) else len(event_list) - 1
+            if n == len(event_list) - 1:
+                if self.is_overshot(event_list[n]['timestamp'], base_timestamp, 0):
+                    return n
+        while not self.is_undershot(base_timestamp, event_list[n]['timestamp']):
+            n = n_1 if (n_1:=n-100) > 0 else 0
+        while self.is_undershot(base_timestamp, event_list[n]['timestamp']):
+            n = n_1 if (n_1:=n+10) < len(event_list) else len(event_list) - 1
+        while not self.is_undershot(base_timestamp, event_list[n]['timestamp']):
+            n = n_1 if (n_1:=n-10) > 0 else 0
+        return n - 1
+
+    def is_undershot(self, base_timestamp, check_timestamp):
+        if check_timestamp <= base_timestamp:
+            return True
+        return False
+
+    def is_overshot(self, base_timestamp, check_timestamp, timeout):
+        if check_timestamp > base_timestamp + timeout:
+            return True
+        return False
