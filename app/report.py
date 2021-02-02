@@ -1,3 +1,6 @@
+import plotly.graph_objects as go
+from plotly.express import colors
+from itertools import cycle
 
 
 class Report():
@@ -28,12 +31,20 @@ class Report():
         return fight_names
 
     def get_friendly_names(self, fights):
-        friendlies = fights["friendlies"] + fights['friendlyPets']
+        friendlies = fights['friendlies'] + fights['friendlyPets']
         friendly_names = {}
 
         for f in friendlies:
-            friendly_names.update({f["id"] : f["name"]})
+            friendly_names.update({f['id'] : f['name']})
         return friendly_names
+
+    def get_enemy_names(self, fights):
+        enemies = fights['enemies'] + fights['enemyPets']
+        enemy_names = {}
+
+        for e in enemies:
+            enemy_names.update({e['id'] : e['name']})
+        return enemy_names
 
     def get_target_id(self, event):
         if 'targetID' in event:
@@ -44,7 +55,7 @@ class Report():
 
     def get_input(self, input_variable, standard_val, unit=''):
         while True:
-            i = input(f"Input {input_variable} [Enter to Accept]: {standard_val:>5}{unit} : ")
+            i = input(f'Input {input_variable} [Enter to Accept]: {standard_val:>5}{unit} : ')
             if i:
                 try:
                     i = int(i.strip(unit))
@@ -99,3 +110,65 @@ class Report():
         if check_timestamp > base_timestamp + timeout:
             return True
         return False
+
+    def sort_dict(self, sort_dict, by_value, reverse=True):
+        return {h : v for h, v in sorted(sort_dict.items(), key=lambda item: item[1][by_value], reverse=reverse)}
+
+    def make_time_plot(self, fig, data_dict, events_key, event_val_key, row, col, palette=None):
+
+        if palette is not None:
+            palette = cycle(getattr(colors.qualitative, self.plot_palette))
+
+        for item in data_dict:
+            timestamps = [d['timeStamp'] for d in data_dict[item][events_key]]
+            event_vals = [d[event_val_key] for d in data_dict[item][events_key]]
+            event_strings = [d['eventString'] for d in data_dict[item][events_key]]
+
+            if palette is not None:
+                data_dict[item].update({'markerColor' : next(palette)})
+
+            fig.add_trace(go.Bar(name=item,
+                                    x=timestamps,
+                                    y=event_vals,
+                                    hovertext=event_strings,
+                                    width=(self.end - self.start)/self.plot_time_barwidth_divisor,
+                                    legendgroup=item,
+                                    marker_color=data_dict[item]['markerColor'],
+                                    marker=dict(line=dict(width=0))),
+                                    row=row, col=col)
+
+        fig.update_xaxes(range=[self.start, self.end], mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=row, col=col)
+        fig.update_yaxes(mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=row, col=col)
+
+    def make_horizontal_plot(self, fig, data_dict, value_key, hovertext_key, row, col):
+        for key in reversed(data_dict):
+            if data_dict[key][value_key] > 0:
+                fig.add_trace(go.Bar(name=key,
+                                        y=[key],
+                                        x=[data_dict[key][value_key]],
+                                        hovertext=[data_dict[key][hovertext_key]],
+                                        orientation='h',
+                                        legendgroup=key,
+                                        showlegend=False,
+                                        marker_color=data_dict[key]['markerColor'],
+                                        marker=dict(line=dict(width=0))),
+                                        row=row, col=col)
+
+        fig.update_yaxes(ticksuffix='  ',
+                            mirror=True,
+                            zeroline=False,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=row, col=col)
+
+        fig.update_xaxes(mirror=True,
+                            zeroline=False,
+                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+                            row=row, col=col)

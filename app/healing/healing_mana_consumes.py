@@ -158,7 +158,7 @@ class HealingManaConsumes(Report):
                                                                     f"total : " \
                                                                     f"{self.healers[c['healer']]['consumeString']}"})
 
-        self.healers = {h : v for h, v in sorted(self.healers.items(), key=lambda item: item[1]['cost'], reverse=True)}
+        self.healers = self.sort_dict(self.healers, 'cost', reverse=True)
         self.consumes = sorted(self.consumes, key=lambda item: item.total_cost, reverse=True)
 
         print()

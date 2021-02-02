@@ -12,13 +12,15 @@ from itertools import cycle
 
 class HealingSaves(Report):
 
-    def __init__(self, report, api, fig_dir=None, full_report=False):
+    def __init__(self, report, api, fig_dir=None, healing_spells=None, full_report=False):
         Report.__init__(self, report, api, fig_dir=fig_dir)
+
+        assert healing_spells is not None, "Please provide a list with healing_spell dataclasses."
 
         print("\nHealing Saves")
         print("\n\tRetrieving and sorting data ...\n")
 
-        bar = tqdm(total=8)
+        bar = tqdm(total=9)
 
         self.fight_names = self.get_fight_names(self.fights)
 
@@ -49,6 +51,10 @@ class HealingSaves(Report):
         bar.update(1)
 
         self.death_events = self.death_resp['events']
+
+        bar.update(1)
+
+        self.spells = self.spell_ids(healing_spells)
 
         bar.update(1)
 
@@ -95,7 +101,7 @@ class HealingSaves(Report):
 
         print()
 
-        self.save_healers = {h : v for h, v in sorted(self.save_healers.items(), key=lambda item: len(item[1]['saves']), reverse=True)}
+        self.save_healers = self.sort_dict(self.save_healers, 'saves', reverse=True)
 
         for healer in self.save_healers:
             print(self.save_healers[healer]['completeString'])
@@ -135,7 +141,7 @@ class HealingSaves(Report):
 
             if healer in self.save_healers:
 
-                self.save_healers[healer].update({'healing amount' : self.save_healers[healer]['healing amount'] + save['amount']})
+                self.save_healers[healer]['healing amount'] += save['amount']
                 self.save_healers[healer]['saves'].append(save)
                 self.save_healers[healer].update({'completeString' : f"{healer} : saved people {len(self.save_healers[healer]['saves'])} " \
                                                                         f"times for {self.save_healers[healer]['healing amount']} healing total"})
@@ -162,11 +168,12 @@ class HealingSaves(Report):
 
         for heal in healing_events[n-15:]:
 
-            if not 'overheal' in heal:
-                if heal['amount'] > heal_treshold:
-                    if self.get_target_id(heal) == self.get_target_id(damage):
-                        if damage['timestamp'] <= heal['timestamp'] <= damage['timestamp'] + heal_timeout:
-                            saves.append(heal)
+            if h['ability']['guid'] in self.spells:
+                if not 'overheal' in heal:
+                    if heal['amount'] > heal_treshold:
+                        if self.get_target_id(heal) == self.get_target_id(damage):
+                            if damage['timestamp'] <= heal['timestamp'] <= damage['timestamp'] + heal_timeout:
+                                saves.append(heal)
 
             if self.is_overshot(damage['timestamp'], heal['timestamp'], heal_timeout):
                 break

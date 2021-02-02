@@ -77,7 +77,7 @@ class HealingTaps(Report):
 
         print()
 
-        self.tap_healers = {h : v for h, v in sorted(self.tap_healers.items(), key=lambda item: len(item[1]['tapHeals']), reverse=True)}
+        self.tap_healers = self.sort_dict(self.tap_healers, 'tapHeals', reverse=True)
 
         for healer, value in self.tap_healers.items():
             print(f"{healer} : healed taps {len(value['tapHeals'])} times for {value['amount']} healing")
@@ -118,7 +118,7 @@ class HealingTaps(Report):
 
             if healer in self.tap_healers:
 
-                self.tap_healers[healer].update({'amount' : self.tap_healers[healer]['amount'] + heal['amount']})
+                self.tap_healers[healer]['amount'] += heal['amount']
                 self.tap_healers[healer]['tapHeals'].append(heal)
                 self.tap_healers[healer].update({'completeString' : f"{healer} : healed taps {len(self.tap_healers[healer]['tapHeals'])} " \
                                                                     f"times for {self.tap_healers[healer]['amount']} healing total"})

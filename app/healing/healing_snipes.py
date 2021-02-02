@@ -80,8 +80,8 @@ class HealingSnipes(Report):
                             if snipes:
                                 self.process_snipes(snipes, base_heal)
 
-        self.max_snipers = {h : v for h, v in sorted(self.max_snipers.items(), key=lambda item: len(item[1]['snipes']), reverse=True)}
-        self.max_sniped = {h : v for h, v in sorted(self.max_sniped.items(), key=lambda item: len(item[1]['snipes']), reverse=True)}
+        self.max_snipers = self.sort_dict(self.max_snipers, 'snipes', reverse=True)
+        self.max_sniped = self.sort_dict(self.max_sniped, 'snipes', reverse=True)
 
         print()
         for sniper in self.max_snipers:
@@ -120,7 +120,7 @@ class HealingSnipes(Report):
             print(snipe['eventString'])
 
             if snipe['healer'] in self.max_snipers:
-                self.max_snipers[snipe['healer']].update({'amount' : self.max_snipers[snipe['healer']]['amount'] + snipe['amount']})
+                self.max_snipers[snipe['healer']]['amount'] += snipe['amount']
                 self.max_snipers[snipe['healer']]['snipes'].append(snipe)
             else:
                 self.max_snipers.update({snipe['healer'] : {'amount' : snipe['amount'], 'snipes' : [snipe]}})
@@ -131,7 +131,7 @@ class HealingSnipes(Report):
                                                                             " healing total"})
 
             if base_heal['healer'] in self.max_sniped:
-                self.max_sniped[base_heal['healer']].update({'amount' : self.max_sniped[base_heal['healer']]['amount'] + snipe['amount']})
+                self.max_sniped[base_heal['healer']]['amount'] += snipe['amount']
                 self.max_sniped[base_heal['healer']]['snipes'].append(snipe)
             else:
                 self.max_sniped.update({base_heal['healer'] : {'amount' : snipe['amount'], 'snipes' : [snipe]}})
