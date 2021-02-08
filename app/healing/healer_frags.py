@@ -23,7 +23,7 @@ class HealerFrags(Report):
                                                                         'Mindflay',
                                                                         'Seal of Command', 'Holy Shield', 'Seal of Righteousness']
 
-        bar = tqdm(total=9)
+        bar = tqdm(total=3)
 
         self.fight_names = self.get_fight_names(self.fights)
 
@@ -37,15 +37,11 @@ class HealerFrags(Report):
 
         bar.update(1)
 
+        bar.close()
+
         self.frag_events = self.get_frag_events(self.classes)
 
-        bar.update(1)
-
         self.frag_events = self.remove_meme_specs(self.frag_events, self.meme_spells)
-
-        bar.update(1)
-
-        bar.close()
 
         self.plot_path = os.path.join(self.fig_dir, n) if (n:=self.frags_plot_name()) is not None else None
 
