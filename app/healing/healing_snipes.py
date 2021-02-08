@@ -224,101 +224,107 @@ class HealingSnipes(Report):
 
         palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
-        for sniper in snipers:
-            timestamps = np.array([s['snipedHeal']['timeStamp'] for s in snipers[sniper]['snipes']])
-            event_vals = [s['amount'] for s in snipers[sniper]['snipes']]
-            event_strings = [s['eventString'] for s in snipers[sniper]['snipes']]
-            snipers[sniper].update({'markerColor' : next(palette)})
-            fig.add_trace(go.Bar(name=sniper,
-                                    x=timestamps,
-                                    y=event_vals,
-                                    hovertext=event_strings,
-                                    width=(self.end - self.start)/self.plot_time_barwidth_divisor,
-                                    legendgroup=sniper,
-                                    marker_color=snipers[sniper]['markerColor'],
-                                    marker=dict(line=dict(width=0))),
-                                    row=1, col=1)
-        for sniper in reversed(snipers):
-            fig.add_trace(go.Bar(name=sniper,
-                                    y=[sniper],
-                                    x=[len(snipers[sniper]['snipes'])],
-                                    hovertext=[snipers[sniper]['completeString']],
-                                    orientation='h',
-                                    legendgroup=sniper,
-                                    showlegend=False,
-                                    marker_color=snipers[sniper]['markerColor'],
-                                    marker=dict(line=dict(width=0))),
-                                    row=1, col=2)
+        self.make_time_plot(fig, snipers, 'snipes', 'amount', row=1, col=1, palette=palette, t_stamp_event_key='snipedHeal')
+        self.make_horizontal_plot(fig, snipers, 'snipes', 'completeString', row=1, col=2)
 
-        fig.update_xaxes(range=[self.start, self.end], mirror=True,
-                            zeroline=False,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=1, col=1)
-        fig.update_yaxes(mirror=True,
-                            zeroline=False,
-                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=1, col=1)
+        # for sniper in snipers:
+        #     timestamps = np.array([s['snipedHeal']['timeStamp'] for s in snipers[sniper]['snipes']])
+        #     event_vals = [s['amount'] for s in snipers[sniper]['snipes']]
+        #     event_strings = [s['eventString'] for s in snipers[sniper]['snipes']]
+        #     snipers[sniper].update({'markerColor' : next(palette)})
+        #     fig.add_trace(go.Bar(name=sniper,
+        #                             x=timestamps,
+        #                             y=event_vals,
+        #                             hovertext=event_strings,
+        #                             width=(self.end - self.start)/self.plot_time_barwidth_divisor,
+        #                             legendgroup=sniper,
+        #                             marker_color=snipers[sniper]['markerColor'],
+        #                             marker=dict(line=dict(width=0))),
+        #                             row=1, col=1)
+        # for sniper in reversed(snipers):
+        #     fig.add_trace(go.Bar(name=sniper,
+        #                             y=[sniper],
+        #                             x=[len(snipers[sniper]['snipes'])],
+        #                             hovertext=[snipers[sniper]['completeString']],
+        #                             orientation='h',
+        #                             legendgroup=sniper,
+        #                             showlegend=False,
+        #                             marker_color=snipers[sniper]['markerColor'],
+        #                             marker=dict(line=dict(width=0))),
+        #                             row=1, col=2)
 
-        fig.update_yaxes(ticksuffix='  ', mirror=True,
-                            zeroline=False,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=1, col=2)
-        fig.update_xaxes(mirror=True,
-                            zeroline=False,
-                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=1, col=2)
+        # fig.update_xaxes(range=[self.start, self.end], mirror=True,
+        #                     zeroline=False,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=1, col=1)
+        # fig.update_yaxes(mirror=True,
+        #                     zeroline=False,
+        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=1, col=1)
 
-        for sniped in snipeds:
-            timestamps = np.array([s['snipedHeal']['timeStamp'] for s in snipeds[sniped]['snipes']])
-            event_vals = [s['amount'] for s in snipeds[sniped]['snipes']]
-            event_strings = [s['eventString'] for s in snipeds[sniped]['snipes']]
-            if sniped in snipers:
-                snipeds[sniped].update({'markerColor' : snipers[sniped]['markerColor']})
-            else:
-                snipeds[sniped].update({'markerColor' : next(palette)})
-            fig.add_trace(go.Bar(name=sniped,
-                                    x=timestamps,
-                                    y=event_vals,
-                                    hovertext=event_strings,
-                                    width=(self.end - self.start)/self.plot_time_barwidth_divisor,
-                                    legendgroup=sniped,
-                                    showlegend=False,
-                                    marker_color=snipeds[sniped]['markerColor'],
-                                    marker=dict(line=dict(width=0))),
-                                    row=2, col=1)
-        for sniped in reversed(snipeds):
-            fig.add_trace(go.Bar(name=sniped,
-                                    y=[sniped],
-                                    x=[len(snipeds[sniped]['snipes'])],
-                                    hovertext=[snipeds[sniped]['completeString']],
-                                    orientation='h',
-                                    legendgroup=sniped,
-                                    showlegend=False,
-                                    marker_color=snipeds[sniped]['markerColor'],
-                                    marker=dict(line=dict(width=0))),
-                                    row=2, col=2)
+        # fig.update_yaxes(ticksuffix='  ', mirror=True,
+        #                     zeroline=False,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=1, col=2)
+        # fig.update_xaxes(mirror=True,
+        #                     zeroline=False,
+        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=1, col=2)
 
-        fig.update_xaxes(range=[self.start, self.end], mirror=True,
-                            zeroline=False,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=2, col=1)
-        fig.update_yaxes(mirror=True,
-                            zeroline=False,
-                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=2, col=1)
+        self.make_time_plot(fig, snipeds, 'snipes', 'amount', row=2, col=1, palette=palette, t_stamp_event_key='snipedHeal', marker_data_dict=snipers, showlegend=False)
+        self.make_horizontal_plot(fig, snipeds, 'snipes', 'completeString', row=2, col=2)
 
-        fig.update_yaxes(ticksuffix='  ', mirror=True,
-                            zeroline=False,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=2, col=2)
-        fig.update_xaxes(mirror=True,
-                            zeroline=False,
-                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=2, col=2)
+        # for sniped in snipeds:
+        #     timestamps = np.array([s['snipedHeal']['timeStamp'] for s in snipeds[sniped]['snipes']])
+        #     event_vals = [s['amount'] for s in snipeds[sniped]['snipes']]
+        #     event_strings = [s['eventString'] for s in snipeds[sniped]['snipes']]
+        #     if sniped in snipers:
+        #         snipeds[sniped].update({'markerColor' : snipers[sniped]['markerColor']})
+        #     else:
+        #         snipeds[sniped].update({'markerColor' : next(palette)})
+        #     fig.add_trace(go.Bar(name=sniped,
+        #                             x=timestamps,
+        #                             y=event_vals,
+        #                             hovertext=event_strings,
+        #                             width=(self.end - self.start)/self.plot_time_barwidth_divisor,
+        #                             legendgroup=sniped,
+        #                             showlegend=False,
+        #                             marker_color=snipeds[sniped]['markerColor'],
+        #                             marker=dict(line=dict(width=0))),
+        #                             row=2, col=1)
+        # for sniped in reversed(snipeds):
+        #     fig.add_trace(go.Bar(name=sniped,
+        #                             y=[sniped],
+        #                             x=[len(snipeds[sniped]['snipes'])],
+        #                             hovertext=[snipeds[sniped]['completeString']],
+        #                             orientation='h',
+        #                             legendgroup=sniped,
+        #                             showlegend=False,
+        #                             marker_color=snipeds[sniped]['markerColor'],
+        #                             marker=dict(line=dict(width=0))),
+        #                             row=2, col=2)
+
+        # fig.update_xaxes(range=[self.start, self.end], mirror=True,
+        #                     zeroline=False,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=2, col=1)
+        # fig.update_yaxes(mirror=True,
+        #                     zeroline=False,
+        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=2, col=1)
+
+        # fig.update_yaxes(ticksuffix='  ', mirror=True,
+        #                     zeroline=False,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=2, col=2)
+        # fig.update_xaxes(mirror=True,
+        #                     zeroline=False,
+        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=2, col=2)
 
         fig.update_layout(barmode='stack',
                           paper_bgcolor=self.paper_bgcolor,

@@ -190,16 +190,17 @@ class HealerFrags(Report):
 
         for event in events:
             if 'ability' in event:
-                if event['sourceID'] not in meme_ids:
-                    if 'name' in event['ability']:
-                        if event['ability']['name']:
-                            if event['ability']['name'] in meme_spells:
-                                meme_id = event['sourceID']
-                                if meme_id not in meme_ids:
-                                    meme_ids.append(meme_id)
-                                    filtered_events = [e for e in filtered_events if e['sourceID'] != meme_id]
-                            else:
-                                filtered_events.append(event)
+                if 'sourceID' in event:
+                    if event['sourceID'] not in meme_ids:
+                        if 'name' in event['ability']:
+                            if event['ability']['name']:
+                                if event['ability']['name'] in meme_spells:
+                                    meme_id = event['sourceID']
+                                    if meme_id not in meme_ids:
+                                        meme_ids.append(meme_id)
+                                        filtered_events = [e for e in filtered_events if e['sourceID'] != meme_id]
+                                else:
+                                    filtered_events.append(event)
 
         return filtered_events
 
@@ -301,8 +302,8 @@ class HealerFrags(Report):
                           font=go.layout.Font(family='Arial', color=self.plot_textcolor),
                           title=report_title)
 
-        # if save_path is not None:
-        #     fig.write_html(save_path, include_plotlyjs='cdn')
+        if save_path is not None:
+            fig.write_html(save_path, include_plotlyjs='cdn')
 
         if full_report:
             return fig

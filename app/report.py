@@ -7,7 +7,7 @@ class Report():
 
     def __init__(self, report, api, fig_dir=None,
                  paper_bgcolor='#0E0E0E', plot_bgcolor='#141414', plot_palette='Plotly',
-                 plot_axiscolor='#555555', plot_textcolor='#ffffff', plot_time_barwidth_divisor=1250,
+                 plot_axiscolor='#555555', plot_textcolor='#ffffff', plot_time_barwidth_divisor=1200,
                  plot_time_end_buffer=0):
 
         for key, item in report.items():
@@ -112,30 +112,49 @@ class Report():
         return False
 
     def sort_dict(self, sort_dict, by_value, reverse=True):
-        return {h : v for h, v in sorted(sort_dict.items(), key=lambda item: item[1][by_value], reverse=reverse)}
+        if isinstance(list(sort_dict.values())[0][by_value], (int, float)):
+            return {h : v for h, v in sorted(sort_dict.items(), key=lambda item: item[1][by_value], reverse=reverse)}
+        elif isinstance(list(sort_dict.values())[0][by_value], list):
+            return {h : v for h, v in sorted(sort_dict.items(), key=lambda item: len(item[1][by_value]), reverse=reverse)}
+        else:
+            return {h : v for h, v in sorted(sort_dict.items(), key=lambda item: item[1][by_value], reverse=reverse)}
 
-    def make_time_plot(self, fig, data_dict, events_key, event_val_key, row, col, palette=None):
+    def make_time_plot(self, fig, data_dict, events_key, event_val_key, row, col, palette=None, t_stamp_event_key=None, marker_data_dict=None, showlegend=True):
 
         if palette is not None:
             palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
         for item in data_dict:
-            timestamps = [d['timeStamp'] for d in data_dict[item][events_key]]
+            if t_stamp_event_key:
+                timestamps = [d[t_stamp_event_key]['timeStamp'] for d in data_dict[item][events_key]]
+            else:
+                timestamps = [d['timeStamp'] for d in data_dict[item][events_key]]
             event_vals = [d[event_val_key] for d in data_dict[item][events_key]]
             event_strings = [d['eventString'] for d in data_dict[item][events_key]]
 
-            if palette is not None:
-                data_dict[item].update({'markerColor' : next(palette)})
+            if marker_data_dict is not None:
+                if item in marker_data_dict:
+                    data_dict[item].update({'markerColor' : marker_data_dict[item]['markerColor']})
+                else:
+                    if palette is not None:
+                        data_dict[item].update({'markerColor' : next(palette)})
+            else:
+                if palette is not None:
+                    data_dict[item].update({'markerColor' : next(palette)})
 
-            fig.add_trace(go.Bar(name=item,
-                                    x=timestamps,
-                                    y=event_vals,
-                                    hovertext=event_strings,
-                                    width=(self.end - self.start)/self.plot_time_barwidth_divisor,
-                                    legendgroup=item,
-                                    marker_color=data_dict[item]['markerColor'],
-                                    marker=dict(line=dict(width=0))),
-                                    row=row, col=col)
+            try:
+                fig.add_trace(go.Bar(name=item,
+                                        x=timestamps,
+                                        y=event_vals,
+                                        hovertext=event_strings,
+                                        width=(self.end - self.start)/self.plot_time_barwidth_divisor,
+                                        legendgroup=item,
+                                        showlegend=showlegend,
+                                        marker_color=data_dict[item]['markerColor'],
+                                        marker=dict(line=dict(width=0))),
+                                        row=row, col=col)
+            except:
+                print()
 
         fig.update_xaxes(range=[self.start, self.end], mirror=True,
                             zeroline=False,
@@ -149,10 +168,17 @@ class Report():
 
     def make_horizontal_plot(self, fig, data_dict, value_key, hovertext_key, row, col):
         for key in reversed(data_dict):
-            if data_dict[key][value_key] > 0:
+
+            value = 0
+            if isinstance(data_dict[key][value_key], (int, float)):
+                value = data_dict[key][value_key]
+            elif isinstance(data_dict[key][value_key], list):
+                value = len(data_dict[key][value_key])
+
+            if value > 0:
                 fig.add_trace(go.Bar(name=key,
                                         y=[key],
-                                        x=[data_dict[key][value_key]],
+                                        x=[value],
                                         hovertext=[data_dict[key][hovertext_key]],
                                         orientation='h',
                                         legendgroup=key,

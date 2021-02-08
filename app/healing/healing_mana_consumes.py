@@ -218,6 +218,7 @@ class HealingManaConsumes(Report):
 
         palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
+
         for healer in healers:
             timestamps = np.array([c['timeStamp'] for c in healers[healer]['consumeEvents']])
             event_vals = [c['consume'].cost_price.price / 10000 for c in healers[healer]['consumeEvents']]

@@ -226,51 +226,54 @@ class HealingSaves(Report):
 
         palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
-        for healer in healers:
-            timestamps = np.array([s['saveDamage']['timeStamp'] for s in healers[healer]['saves']])
-            event_vals = [s['amount'] for s in healers[healer]['saves']]
-            event_strings = [s['eventString'] for s in healers[healer]['saves']]
-            healers[healer].update({'markerColor' : next(palette)})
-            fig.add_trace(go.Bar(name=healer,
-                                    x=timestamps,
-                                    y=event_vals,
-                                    hovertext=event_strings,
-                                    width=(self.end - self.start)/self.plot_time_barwidth_divisor,
-                                    legendgroup=healer,
-                                    marker_color=healers[healer]['markerColor'],
-                                    marker=dict(line=dict(width=0))),
-                                    row=1, col=1)
-        for healer in reversed(healers):
-            fig.add_trace(go.Bar(name=healer,
-                                    y=[healer],
-                                    x=[len(healers[healer]['saves'])],
-                                    hovertext=[healers[healer]['completeString']],
-                                    orientation='h',
-                                    legendgroup=healer,
-                                    showlegend=False,
-                                    marker_color=healers[healer]['markerColor'],
-                                    marker=dict(line=dict(width=0))),
-                                    row=1, col=2)
+        self.make_time_plot(fig, healers, 'saves', 'amount', row=1, col=1, palette=palette, t_stamp_event_key='saveDamage')
+        self.make_horizontal_plot(fig, healers, 'saves', 'completeString', row=1, col=2)
 
-        fig.update_xaxes(range=[self.start, self.end], mirror=True,
-                            zeroline=False,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=1, col=1)
-        fig.update_yaxes(mirror=True,
-                            zeroline=False,
-                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=1, col=1)
+        # for healer in healers:
+        #     timestamps = np.array([s['saveDamage']['timeStamp'] for s in healers[healer]['saves']])
+        #     event_vals = [s['amount'] for s in healers[healer]['saves']]
+        #     event_strings = [s['eventString'] for s in healers[healer]['saves']]
+        #     healers[healer].update({'markerColor' : next(palette)})
+        #     fig.add_trace(go.Bar(name=healer,
+        #                             x=timestamps,
+        #                             y=event_vals,
+        #                             hovertext=event_strings,
+        #                             width=(self.end - self.start)/self.plot_time_barwidth_divisor,
+        #                             legendgroup=healer,
+        #                             marker_color=healers[healer]['markerColor'],
+        #                             marker=dict(line=dict(width=0))),
+        #                             row=1, col=1)
+        # for healer in reversed(healers):
+        #     fig.add_trace(go.Bar(name=healer,
+        #                             y=[healer],
+        #                             x=[len(healers[healer]['saves'])],
+        #                             hovertext=[healers[healer]['completeString']],
+        #                             orientation='h',
+        #                             legendgroup=healer,
+        #                             showlegend=False,
+        #                             marker_color=healers[healer]['markerColor'],
+        #                             marker=dict(line=dict(width=0))),
+        #                             row=1, col=2)
 
-        fig.update_yaxes(ticksuffix='  ', mirror=True,
-                            zeroline=False,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=1, col=2)
-        fig.update_xaxes(mirror=True,
-                            zeroline=False,
-                            showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-                            linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-                            row=1, col=2)
+        # fig.update_xaxes(range=[self.start, self.end], mirror=True,
+        #                     zeroline=False,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=1, col=1)
+        # fig.update_yaxes(mirror=True,
+        #                     zeroline=False,
+        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=1, col=1)
+
+        # fig.update_yaxes(ticksuffix='  ', mirror=True,
+        #                     zeroline=False,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=1, col=2)
+        # fig.update_xaxes(mirror=True,
+        #                     zeroline=False,
+        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
+        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
+        #                     row=1, col=2)
 
         fig.update_layout(barmode='stack',
                           paper_bgcolor=self.paper_bgcolor,

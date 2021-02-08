@@ -18,34 +18,35 @@ class Main():
         self.api = WCLApi(self.wcl_config.content.api_key, query_dir=self.query_dir)
         self.report = Reportpicker(self.wcl_config, api=self.api).pick_loop()
 
-        # self.healing_saves = HealingSaves(self.report,
-        #                                     self.api,
-        #                                     fig_dir=self.figures_dir,
-        #                                     healing_spells=self.healing_spells.content,
-        #                                     full_report=True)
+        self.healing_saves = HealingSaves(self.report,
+                                            self.api,
+                                            fig_dir=self.figures_dir,
+                                            healing_spells=self.healing_spells.content,
+                                            full_report=True)
 
-        # self.healing_snipes = HealingSnipes(self.report,
-        #                                     self.api,
-        #                                     fig_dir=self.figures_dir,
-        #                                     healing_spells=self.healing_spells.content,
-        #                                     full_report=True)
+        self.healing_snipes = HealingSnipes(self.report,
+                                            self.api,
+                                            fig_dir=self.figures_dir,
+                                            healing_spells=self.healing_spells.content,
+                                            full_report=True)
 
-        # self.healing_mana_consumes = HealingManaConsumes(self.report,
-        #                                                     self.api,
-        #                                                     fig_dir=self.figures_dir,
-        #                                                     healing_consumes=self.healing_consumes.content,
-        #                                                     server_name=self.wcl_config.content.server,
-        #                                                     full_report=True)
+        self.healing_mana_consumes = HealingManaConsumes(self.report,
+                                                            self.api,
+                                                            fig_dir=self.figures_dir,
+                                                            healing_consumes=self.healing_consumes.content,
+                                                            server_name=self.wcl_config.content.server,
+                                                            full_report=True)
 
-        # self.tap_heals = HealingTaps(self.report,
-        #                                 self.api,
-        #                                 fig_dir=self.figures_dir,
-        #                                 healing_spells=self.healing_spells.content,
-        #                                 full_report=True)
+        self.tap_heals = HealingTaps(self.report,
+                                        self.api,
+                                        fig_dir=self.figures_dir,
+                                        healing_spells=self.healing_spells.content,
+                                        full_report=True)
 
         self.healer_frags = HealerFrags(self.report,
                                         self.api,
-                                        fig_dir=self.figures_dir)
+                                        fig_dir=self.figures_dir,
+                                        full_report=True)
 
         # self.report_path = os.path.join(self.figures_dir, f'healing_report_{self.healing_snipes.id}.html')
         # with open(self.report_path, 'a') as f:
