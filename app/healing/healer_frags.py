@@ -219,8 +219,9 @@ class HealerFrags(Report):
                     if os.path.splitext(save_path)[-1] == '.html':
                         webbrowser.open(f'file://{save_path}', new=2)
                         return
-
         try:
+            self.tab_title = "Respec Applications"
+            self.tab_id = "respec-applications"
             report_title = '<span style="font-size: 28px">Respec Applications &nbsp;&nbsp;&nbsp;&nbsp;</span>' \
                             f'<span style="font-size: 22px"><i>"No"</i></span>' \
                             f'<span style="font-size: 12px"><i> - Exit (2019), Healingbeard (2020), Parshathh (2021)</i></span><br>' \
@@ -266,8 +267,7 @@ class HealerFrags(Report):
                             specs=specs,
                             subplot_titles=titles,
                             horizontal_spacing=0.065,
-                            vertical_spacing=0.075,
-                            print_grid=True)
+                            vertical_spacing=0.075)
 
         palette = cycle(getattr(colors.qualitative, self.plot_palette))
 

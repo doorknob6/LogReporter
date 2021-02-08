@@ -21,16 +21,16 @@ h2 {
   text-align: justify;
 }
 
-.report-title {
+.report-type {
   float: left;
 }
 
-.report-properties {
+.report-title-date {
   float: right;
 }
 
 /* Style the tab */
-.tab {
+.tabbar {
   overflow: hidden;
   border: 1px solid #555555;
   background-color: #001525;
@@ -38,7 +38,7 @@ h2 {
 }
 
 /* Style the buttons inside the tab */
-.tab button {
+.tabbar button {
   background-color: inherit;
   float: left;
   border: none;
@@ -52,12 +52,12 @@ h2 {
 }
 
 /* Change background color of buttons on hover */
-.tab button:hover {
+.tabbar button:hover {
   background-color: #002040;
 }
 
 /* Create an active/current tablink class */
-.tab button.active {
+.tabbar button.active {
   background-color: #002040;
 }
 
@@ -87,37 +87,16 @@ h2 {
 </head>
 <body>
 
-<div>
-<div class="report-title">
+<div class="title-block">
+<div class="report-type">
 <h2>Healing Report</h2>
 </div>
-<div class="report-properties">
-<h2>Naxxramas - Sun 24 Jan 2021</h2>
+<div class="report-title-date">
+<h2 id="report-title-date"></h2>
 </div>
 </div>
 
-<div class="tab">
-  <button class="tablinks" onclick="openReport(event, 'Guardian Angels')">Guardian Angels</button>
-  <button class="tablinks" onclick="openReport(event, 'Sniper Elite')">Sniper Elite</button>
-  <button class="tablinks" onclick="openReport(event, 'Doping Up')">Doping Up</button>
-  <button class="tablinks" onclick="openReport(event, 'Parses on Tap')">Parses on Tap</button>
-</div>
-
-<!-- Tab content -->
-<div id="Guardian Angels" class="tabcontent">
-
-</div>
-
-<div id="Sniper Elite" class="tabcontent">
-
-</div>
-
-<div id="Doping Up" class="tabcontent">
-
-</div>
-
-<div id="Parses on Tap" class="tabcontent">
-
+<div class="tabbar">
 </div>
 
 <script>

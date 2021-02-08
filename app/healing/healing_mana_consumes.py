@@ -185,6 +185,8 @@ class HealingManaConsumes(Report):
                         return
 
         try:
+            self.tab_title = "Doping Up"
+            self.tab_id = "doping-up"
             report_title = '<span style="font-size: 28px">Doping Up &nbsp;&nbsp;&nbsp;&nbsp;</span>' \
                             f'<span style="font-size: 22px"><i>Healing Mana Consumes</i></span><br>' \
                             f'<span style="font-size: 12px">{self.title} - ' \

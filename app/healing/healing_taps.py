@@ -174,6 +174,8 @@ class HealingTaps(Report):
                         return
 
         try:
+            self.tab_title = "Parses on Tap"
+            self.tab_id = "parses-on-tap"
             report_title = '<span style="font-size: 28px">Parses on Tap &nbsp;&nbsp;&nbsp;&nbsp;</span>' \
                             f'<span style="font-size: 22px"><i>Warlock Life Taps Healed</i></span><br>' \
                             f'<span style="font-size: 12px">{self.title} - ' \

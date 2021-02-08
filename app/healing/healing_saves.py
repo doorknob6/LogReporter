@@ -190,6 +190,8 @@ class HealingSaves(Report):
                         return
 
         try:
+            self.tab_title = "Guardian Angels"
+            self.tab_id = "guardian-angels"
             report_title = '<span style="font-size: 28px">Guardian Angels &nbsp;&nbsp;&nbsp;&nbsp;</span>' \
                             f'<span style="font-size: 22px"><i>Healing Saves</i></span><br>' \
                             f'<span style="font-size: 12px">{self.title} - ' \

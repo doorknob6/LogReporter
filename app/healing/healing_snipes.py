@@ -189,6 +189,8 @@ class HealingSnipes(Report):
                         return
 
         try:
+            self.tab_title = "Sniper Elite"
+            self.tab_id = "sniper-elite"
             report_title = '<span style="font-size: 28px">Sniper Elite &nbsp;&nbsp;&nbsp;&nbsp;</span>' \
                             f'<span style="font-size: 22px"><i>Healing Snipes</i></span><br>' \
                             f'<span style="font-size: 12px">{self.title} - ' \

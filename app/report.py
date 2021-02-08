@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 from plotly.express import colors
 from itertools import cycle
+from bs4 import BeautifulSoup
 
 
 class Report():
@@ -198,3 +199,28 @@ class Report():
                             showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
                             linecolor=self.plot_axiscolor, showline=True, linewidth=1,
                             row=row, col=col)
+
+    def insert_tab_button(self, report):
+        assert all(k for k in [self.tab_title, self.tab_id]), "Please provide arguments for the report tab_title and tab_id."
+        tab_button = report.new_tag('button', id=f'{self.tab_id}-button')
+        tab_button['class'] = 'tablinks'
+        tab_button['onclick'] = f"openReport(event, '{self.tab_id}')"
+        tab_button.string = self.tab_title
+        tab_bar = report.find('div', 'tabbar')
+        tab_bar.append(tab_button)
+
+    def insert_tab_content(self, report):
+        assert all(k for k in [self.tab_title, self.tab_id, self.plot]), "Please create the report plot."
+        tab_content = report.new_tag('div', id=self.tab_id)
+        tab_content['class'] = 'tabcontent'
+        plot = BeautifulSoup(self.plot.to_html(full_html=False, include_plotlyjs='cdn'), 'html.parser')
+        plotly_graph_div = plot.find('div', 'plotly-graph-div')
+        del plotly_graph_div['style']
+        plot.div['class'] = 'plotly-container'
+        tab_content.append(plot)
+        tab_bar = report.find('div', 'tabbar')
+        tab_bar.insert_after(tab_content)
+
+    def insert_report(self, report):
+        self.insert_tab_button(report)
+        self.insert_tab_content(report)
