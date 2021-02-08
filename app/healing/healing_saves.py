@@ -168,7 +168,7 @@ class HealingSaves(Report):
 
         for heal in healing_events[n-15:]:
 
-            if h['ability']['guid'] in self.spells:
+            if heal['ability']['guid'] in self.spells:
                 if not 'overheal' in heal:
                     if heal['amount'] > heal_treshold:
                         if self.get_target_id(heal) == self.get_target_id(damage):
