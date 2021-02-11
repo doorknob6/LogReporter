@@ -85,7 +85,7 @@ h2 {
 
 </style>
 </head>
-<body>
+<body onload="onLoad()">
 
 <div class="title-block">
 <div class="report-type">
@@ -100,19 +100,27 @@ h2 {
 </div>
 
 <script>
-function openReport(evt, reportName) {
-  var i, tabcontent, tablinks;
-  tabcontent = document.getElementsByClassName("tabcontent");
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
+  function openReport(evt, reportName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(reportName).style.display = "block";
+    evt.currentTarget.className += " active";
   }
-  tablinks = document.getElementsByClassName("tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
+
+  function onLoad(){
+    var tabcontent, tablinks;
+    tablinks = document.getElementsByClassName("tablinks");
+    if (tablinks.length > 0) {
+      tablinks[0].click();
+    }
   }
-  document.getElementById(reportName).style.display = "block";
-  evt.currentTarget.className += " active";
-}
 </script>
 
 </body>
