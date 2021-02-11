@@ -272,15 +272,15 @@ class HealerFrags(Report):
 
         n_col = 0
 
-        if loatheb_events:
-            n_col += 1
-            healers = self.sort_dict(healers, 'loathebDamage', reverse=True)
-            self.make_horizontal_plot(fig, healers, 'loathebDamage', 'loathebString', row=2, col=n_col)
-
         if skeleton_frags:
-            n_col += int(n_cols / n_lists) if n_col > 0 else 1
+            n_col += 1
             healers = self.sort_dict(healers, 'skeletonFrags', reverse=True)
             self.make_horizontal_plot(fig, healers, 'skeletonFrags', 'skeletonString', row=2, col=n_col)
+
+        if loatheb_events:
+            n_col += int(n_cols / n_lists) if n_col > 0 else 1
+            healers = self.sort_dict(healers, 'loathebDamage', reverse=True)
+            self.make_horizontal_plot(fig, healers, 'loathebDamage', 'loathebString', row=2, col=n_col)
 
         if viscidus_events:
             n_col += int(n_cols / n_lists) if n_col > 0 else 1

@@ -1,0 +1,6 @@
+*
+!nerf-inc
+!nerf-inc/*.html
+!templates
+!templates/*html
+!.gitignore
