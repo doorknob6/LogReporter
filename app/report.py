@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 from plotly.express import colors
 from itertools import cycle
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 
 class Report():
@@ -143,21 +144,22 @@ class Report():
                 if palette is not None:
                     data_dict[item].update({'markerColor' : next(palette)})
 
-            try:
-                fig.add_trace(go.Bar(name=item,
-                                        x=timestamps,
-                                        y=event_vals,
-                                        hovertext=event_strings,
-                                        width=(self.end - self.start)/self.plot_time_barwidth_divisor,
-                                        legendgroup=item,
-                                        showlegend=showlegend,
-                                        marker_color=data_dict[item]['markerColor'],
-                                        marker=dict(line=dict(width=0))),
-                                        row=row, col=col)
-            except:
-                print()
 
-        fig.update_xaxes(range=[self.start, self.end], mirror=True,
+            fig.add_trace(go.Bar(name=item,
+                                    x=timestamps,
+                                    y=event_vals,
+                                    hovertext=event_strings,
+                                    width=(self.end - self.start)/self.plot_time_barwidth_divisor,
+                                    legendgroup=item,
+                                    showlegend=showlegend,
+                                    marker_color=data_dict[item]['markerColor'],
+                                    marker=dict(line=dict(width=0))),
+                                    row=row, col=col)
+
+
+        fig.update_xaxes(range=[datetime.fromtimestamp((self.start)/1000).replace(microsecond=0),
+                                datetime.fromtimestamp((self.end)/1000).replace(microsecond=0)],
+                            mirror=True,
                             zeroline=False,
                             linecolor=self.plot_axiscolor, showline=True, linewidth=1,
                             row=row, col=col)
