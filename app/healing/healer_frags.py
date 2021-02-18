@@ -39,6 +39,8 @@ class HealerFrags(Report):
 
         bar.close()
 
+        print()
+
         self.frag_events = self.get_frag_events(self.classes)
 
         self.frag_events = self.remove_meme_specs(self.frag_events, self.meme_spells)
