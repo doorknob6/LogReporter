@@ -108,7 +108,7 @@ class Report():
         return False
 
     def is_overshot(self, base_timestamp, check_timestamp, timeout):
-        if check_timestamp > base_timestamp + timeout:
+        if check_timestamp >= base_timestamp + timeout:
             return True
         return False
 
