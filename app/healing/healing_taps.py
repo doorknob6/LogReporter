@@ -209,53 +209,7 @@ class HealingTaps(Report):
         palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
         self.make_time_plot(fig, healers, 'tapHeals', 'amount', row=1, col=1, palette=palette, t_stamp_event_key='Tap')
-        self.make_horizontal_plot(fig, healers, 'tapHeals', 'completeString', row=1, col=2)
-
-        # for healer in healers:
-        #     timestamps = np.array([s['Tap']['timeStamp'] for s in healers[healer]['tapHeals']])
-        #     event_vals = [h['amount'] for h in healers[healer]['tapHeals']]
-        #     event_strings = [h['eventString'] for h in healers[healer]['tapHeals']]
-        #     healers[healer].update({'markerColor' : next(palette)})
-        #     fig.add_trace(go.Bar(name=healer,
-        #                             x=timestamps,
-        #                             y=event_vals,
-        #                             hovertext=event_strings,
-        #                             width=(self.end - self.start)/self.plot_time_barwidth_divisor,
-        #                             legendgroup=healer,
-        #                             marker_color=healers[healer]['markerColor'],
-        #                             marker=dict(line=dict(width=0))),
-        #                             row=1, col=1)
-        # for healer in reversed(healers):
-        #     fig.add_trace(go.Bar(name=healer,
-        #                             y=[healer],
-        #                             x=[len(healers[healer]['tapHeals'])],
-        #                             hovertext=[healers[healer]['completeString']],
-        #                             orientation='h',
-        #                             legendgroup=healer,
-        #                             showlegend=False,
-        #                             marker_color=healers[healer]['markerColor'],
-        #                             marker=dict(line=dict(width=0))),
-        #                             row=1, col=2)
-
-        # fig.update_xaxes(range=[self.start, self.end], mirror=True,
-        #                     zeroline=False,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=1)
-        # fig.update_yaxes(mirror=True,
-        #                     zeroline=False,
-        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=1)
-
-        # fig.update_yaxes(ticksuffix='  ', mirror=True,
-        #                     zeroline=False,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=2)
-        # fig.update_xaxes(mirror=True,
-        #                     zeroline=False,
-        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=2)
+        self.make_horizontal_plot(fig, healers, 'tapHeals', 'completeString', row=1, col=2, palette=palette)
 
         fig.update_layout(barmode='stack',
                           paper_bgcolor=self.paper_bgcolor,

@@ -113,26 +113,29 @@ class HealingSaves(Report):
 
         print()
 
-        self.save_healers = self.sort_dict(self.save_healers, 'saves', reverse=True)
+        self.save_healers = self.sort_dict(self.save_healers, 'raidSaves', reverse=True)
 
         for healer in self.save_healers:
-            print(self.save_healers[healer]['completeString'])
+            print(self.save_healers[healer]['raidCompleteString'])
 
     def process_saves(self, damage, saves):
 
         self.assert_instantiated()
 
+        self.near_deaths.append(damage)
+
         damage.update({'saves' : saves})
         damage.update({'timeStamp' : datetime.fromtimestamp((self.start + damage['timestamp'])/1000).replace(microsecond=0)})
         damage.update({'timeString' : damage['timeStamp'].strftime(r'%H:%M:%S')})
 
-        self.near_deaths.append(damage)
-
         target_name = self.friendly_names[damage['targetID']]
         damage.update({'targetName' : target_name})
-        fight_name = self.get_fight_name(damage)
 
+        fight_name = self.get_fight_name(damage)
         damage.update({'fightName' : fight_name})
+
+        is_tank = self.is_tank(damage)
+        damage.update({'tank' : is_tank})
 
         save_amount = 0
 
@@ -151,18 +154,25 @@ class HealingSaves(Report):
             save.update({'eventString' : f"{save['timeString']} {healer} saved {target_name} at {damage['hitPoints']}% hp using " \
                                             f"{save['ability']['name']} for {save['amount']} during {fight_name}"})
 
-            if healer in self.save_healers:
+            if healer not in self.save_healers:
+                self.save_healers.update({healer : {'tankHealingAmount' : 0, 'tankSaves' : []}})
+                self.save_healers[healer].update({'tankCompleteString' : ''})
+                self.save_healers[healer].update({'raidHealingAmount' : 0, 'raidSaves' : []})
+                self.save_healers[healer].update({'raidCompleteString' : ''})
 
-                self.save_healers[healer]['healing amount'] += save['amount']
-                self.save_healers[healer]['saves'].append(save)
-                self.save_healers[healer].update({'completeString' : f"{healer} : saved people {len(self.save_healers[healer]['saves'])} " \
-                                                                        f"times for {self.save_healers[healer]['healing amount']} healing total"})
-
+            if is_tank:
+                self.save_healers[healer]['tankHealingAmount'] += save['amount']
+                self.save_healers[healer]['tankSaves'].append(save)
+                self.save_healers[healer].update({'tankCompleteString' : f"{healer} : saved tanks {len(self.save_healers[healer]['tankSaves'])} " \
+                                                                        f"times for {self.save_healers[healer]['tankHealingAmount']} healing total"})
             else:
+                self.save_healers[healer]['raidHealingAmount'] += save['amount']
+                self.save_healers[healer]['raidSaves'].append(save)
+                self.save_healers[healer].update({'raidCompleteString' : f"{healer} : saved people {len(self.save_healers[healer]['raidSaves'])} " \
+                                                                            f"times for {self.save_healers[healer]['raidHealingAmount']} healing total"})
 
-                self.save_healers.update({healer : {'healing amount' : save['amount'], 'saves' : [save]}})
-                self.save_healers[healer].update({'completeString' : f"{healer} : saved people {len(self.save_healers[healer]['saves'])} " \
-                                                                        f"times for {self.save_healers[healer]['healing amount']} healing total"})
+
+
 
         saves_str = ', '.join([f"{s['healerName']} : {s['amount']}" for s in saves])
         damage_string = f"{damage['timeString']}: During {fight_name} - Near death of {target_name} with {damage['hitPoints']}% hp saved by {saves_str}"
@@ -235,61 +245,22 @@ class HealingSaves(Report):
         except AttributeError:
             self.end = events[-1] + self.plot_time_end_buffer
 
-        fig = make_subplots(rows=1, cols=2,
-                            subplot_titles=('Near Death Saves', "Saves per Healer"),
+        fig = make_subplots(rows=2, cols=2,
+                            subplot_titles=('Raid Near Death Saves', 'Raid Saves per Healer',
+                                            'Tank Near Death Saves', 'Tank Saves per Healer'),
                             column_widths=[0.7, 0.3],
-                            horizontal_spacing=0.065)
+                            horizontal_spacing=0.065,
+                            vertical_spacing=0.075)
 
         palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
-        self.make_time_plot(fig, healers, 'saves', 'amount', row=1, col=1, palette=palette, t_stamp_event_key='saveDamage')
-        self.make_horizontal_plot(fig, healers, 'saves', 'completeString', row=1, col=2)
+        self.make_time_plot(fig, healers, 'raidSaves', 'amount', row=1, col=1, palette=palette, t_stamp_event_key='saveDamage')
+        self.make_horizontal_plot(fig, healers, 'raidSaves', 'raidCompleteString', row=1, col=2, palette=palette)
 
-        # for healer in healers:
-        #     timestamps = np.array([s['saveDamage']['timeStamp'] for s in healers[healer]['saves']])
-        #     event_vals = [s['amount'] for s in healers[healer]['saves']]
-        #     event_strings = [s['eventString'] for s in healers[healer]['saves']]
-        #     healers[healer].update({'markerColor' : next(palette)})
-        #     fig.add_trace(go.Bar(name=healer,
-        #                             x=timestamps,
-        #                             y=event_vals,
-        #                             hovertext=event_strings,
-        #                             width=(self.end - self.start)/self.plot_time_barwidth_divisor,
-        #                             legendgroup=healer,
-        #                             marker_color=healers[healer]['markerColor'],
-        #                             marker=dict(line=dict(width=0))),
-        #                             row=1, col=1)
-        # for healer in reversed(healers):
-        #     fig.add_trace(go.Bar(name=healer,
-        #                             y=[healer],
-        #                             x=[len(healers[healer]['saves'])],
-        #                             hovertext=[healers[healer]['completeString']],
-        #                             orientation='h',
-        #                             legendgroup=healer,
-        #                             showlegend=False,
-        #                             marker_color=healers[healer]['markerColor'],
-        #                             marker=dict(line=dict(width=0))),
-        #                             row=1, col=2)
+        healers = self.sort_dict(healers, 'tankSaves', reverse=True)
 
-        # fig.update_xaxes(range=[self.start, self.end], mirror=True,
-        #                     zeroline=False,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=1)
-        # fig.update_yaxes(mirror=True,
-        #                     zeroline=False,
-        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=1)
-
-        # fig.update_yaxes(ticksuffix='  ', mirror=True,
-        #                     zeroline=False,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=2)
-        # fig.update_xaxes(mirror=True,
-        #                     zeroline=False,
-        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=2)
+        self.make_time_plot(fig, healers, 'tankSaves', 'amount', row=2, col=1, palette=palette, t_stamp_event_key='saveDamage')
+        self.make_horizontal_plot(fig, healers, 'tankSaves', 'tankCompleteString', row=2, col=2, palette=palette)
 
         fig.update_layout(barmode='stack',
                           paper_bgcolor=self.paper_bgcolor,

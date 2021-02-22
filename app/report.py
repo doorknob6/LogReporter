@@ -7,7 +7,7 @@ from datetime import datetime
 
 class Report():
 
-    def __init__(self, report, api, fig_dir=None,
+    def __init__(self, report, api, fig_dir=None, fights=None, tanks=None,
                  paper_bgcolor='#0E0E0E', plot_bgcolor='#141414', plot_palette='Plotly',
                  plot_axiscolor='#555555', plot_textcolor='#ffffff', plot_time_barwidth_divisor=1200,
                  plot_time_end_buffer=0):
@@ -16,7 +16,8 @@ class Report():
             self.__setattr__(key, item)
         self.api = api
         self.fig_dir = fig_dir
-        self.fights = self.api.get_report_fights(self.id)
+        self.fights = self.api.get_report_fights(self.id) if fights is None else fights
+        self.tanks = {'fights' : []} if tanks is None else tanks
 
         self.paper_bgcolor = paper_bgcolor
         self.plot_bgcolor = plot_bgcolor
@@ -88,6 +89,48 @@ class Report():
             spells.update({spell.spell_id : spell})
         return spells
 
+    def is_tank(self, event):
+
+        tank = False
+
+        if event['fight'] in self.tanks['fights']:
+            if event['targetID'] in self.tanks:
+                if event['fight'] in self.tanks[event['targetID']]:
+                    tank = True
+        else:
+            # Additional check for Defensive Stance '71', Dire Bear Form '9634' or Holy Shield '20928'
+            if 'buffs' in event:
+                if any(b in event['buffs'].split('.') for b in ['71', '9634', '20928']):
+                    tank = True
+                    if event['targetID'] in self.tanks:
+                        if event['fight'] not in self.tanks[event['targetID']]:
+                            self.tanks[event['targetID']].append(event['fight'])
+
+            if fight:=[f for f in self.fights['fights'] if f['id']==event['fight']]:
+                fight = fight[0]
+
+                fight_summary = self.api.get_report_tables(view='summary',
+                                                            report_code=self.id,
+                                                            start_time=fight['start_time'],
+                                                            end_time=fight['end_time'])
+
+                fight.update({'summary' : fight_summary})
+
+                for player in fight_summary['composition']:
+                    for spec in player['specs']:
+                        if spec['role'] == 'tank':
+                            if player['id'] in self.tanks:
+                                if fight['id'] not in self.tanks[player['id']]:
+                                    self.tanks[player['id']].append(fight['id'])
+                            else:
+                                self.tanks.update({player['id'] : [fight['id']]})
+                            if player['id'] == event['targetID']:
+                                tank = True
+
+                self.tanks['fights'].append(fight['id'])
+
+        return tank
+
     def find_time_index(self, base_timestamp, event_list):
         n = 0
         while self.is_undershot(base_timestamp, event_list[n]['timestamp']):
@@ -121,10 +164,9 @@ class Report():
         else:
             return {h : v for h, v in sorted(sort_dict.items(), key=lambda item: item[1][by_value], reverse=reverse)}
 
-    def make_time_plot(self, fig, data_dict, events_key, event_val_key, row, col, palette=None, t_stamp_event_key=None, marker_data_dict=None, showlegend=True):
+    def make_time_plot(self, fig, data_dict, events_key, event_val_key, row, col, palette, t_stamp_event_key=None):
 
-        if palette is not None:
-            palette = cycle(getattr(colors.qualitative, self.plot_palette))
+        palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
         for item in data_dict:
             if t_stamp_event_key:
@@ -134,16 +176,23 @@ class Report():
             event_vals = [d[event_val_key] for d in data_dict[item][events_key]]
             event_strings = [d['eventString'] for d in data_dict[item][events_key]]
 
-            if marker_data_dict is not None:
-                if item in marker_data_dict:
-                    data_dict[item].update({'markerColor' : marker_data_dict[item]['markerColor']})
-                else:
-                    if palette is not None:
-                        data_dict[item].update({'markerColor' : next(palette)})
-            else:
-                if palette is not None:
-                    data_dict[item].update({'markerColor' : next(palette)})
+            marker_color = None
+            marker = None
+            showlegend=True
 
+            for data in fig._data:
+                if 'legendgroup' in data:
+                    if item==data['legendgroup']:
+                        marker_color=data['marker']['color']
+                        marker=data['marker']
+                        if data['x'] and data['y']:
+                            showlegend=False
+                            break
+
+            if marker_color is None:
+                marker_color = next(palette)
+            if marker is None:
+                marker = dict(line=dict(width=0))
 
             fig.add_trace(go.Bar(name=item,
                                     x=timestamps,
@@ -152,10 +201,9 @@ class Report():
                                     width=(self.end - self.start)/self.plot_time_barwidth_divisor,
                                     legendgroup=item,
                                     showlegend=showlegend,
-                                    marker_color=data_dict[item]['markerColor'],
-                                    marker=dict(line=dict(width=0))),
+                                    marker_color=marker_color,
+                                    marker=marker),
                                     row=row, col=col)
-
 
         fig.update_xaxes(range=[datetime.fromtimestamp((self.start)/1000).replace(microsecond=0),
                                 datetime.fromtimestamp((self.end)/1000).replace(microsecond=0)],
@@ -169,7 +217,10 @@ class Report():
                             linecolor=self.plot_axiscolor, showline=True, linewidth=1,
                             row=row, col=col)
 
-    def make_horizontal_plot(self, fig, data_dict, value_key, hovertext_key, row, col):
+    def make_horizontal_plot(self, fig, data_dict, value_key, hovertext_key, row, col, palette):
+
+        palette = cycle(getattr(colors.qualitative, self.plot_palette))
+
         for key in reversed(data_dict):
 
             value = 0
@@ -179,15 +230,34 @@ class Report():
                 value = len(data_dict[key][value_key])
 
             if value > 0:
+
+                marker_color = None
+                marker = None
+                showlegend=True
+
+                for data in fig._data:
+                    if 'legendgroup' in data:
+                        if key==data['legendgroup']:
+                            marker_color=data['marker']['color']
+                            marker=data['marker']
+                            if data['x'] and data['y']:
+                                showlegend=False
+                                break
+
+                if marker_color is None:
+                    marker_color = next(palette)
+                if marker is None:
+                    marker = dict(line=dict(width=0))
+
                 fig.add_trace(go.Bar(name=key,
                                         y=[key],
                                         x=[value],
                                         hovertext=[data_dict[key][hovertext_key]],
                                         orientation='h',
                                         legendgroup=key,
-                                        showlegend=False,
-                                        marker_color=data_dict[key]['markerColor'],
-                                        marker=dict(line=dict(width=0))),
+                                        showlegend=showlegend,
+                                        marker_color=marker_color,
+                                        marker=marker),
                                         row=row, col=col)
 
         fig.update_yaxes(ticksuffix='  ',

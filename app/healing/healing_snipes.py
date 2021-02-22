@@ -101,46 +101,48 @@ class HealingSnipes(Report):
         base_heal.update({'fightName' : self.get_fight_name(base_heal)})
         base_heal.update({'healer' : self.friendly_names[base_heal['sourceID']]})
 
-        self.sniped_heals.append(base_heal)
+        if not self.is_tank(base_heal):
 
-        for snipe in snipes:
+            self.sniped_heals.append(base_heal)
 
-            if 'snipedHeal' in snipe:
-                snipe = copy(snipe)
+            for snipe in snipes:
 
-            snipe.update({'snipedHeal' : base_heal})
-            snipe.update({'fightName' : base_heal['fightName']})
-            snipe.update({'healer' : self.friendly_names[snipe['sourceID']]})
-            snipe.update({'dateTime' : datetime.fromtimestamp((self.start + snipe['timestamp'])/1000).replace(microsecond=0)})
-            snipe.update({'timeString' : snipe['dateTime'].strftime(r'%H:%M:%S')})
-            snipe.update({'eventString' : f"{snipe['timeString']} {base_heal['healer']}'s {base_heal['ability']['name']} " \
-                                            f"sniped by {snipe['healer']} for {snipe['amount']} using {snipe['ability']['name']} " \
-                                            f"during {snipe['fightName']}"})
+                if 'snipedHeal' in snipe:
+                    snipe = copy(snipe)
 
-            print(snipe['eventString'])
+                snipe.update({'snipedHeal' : base_heal})
+                snipe.update({'fightName' : base_heal['fightName']})
+                snipe.update({'healer' : self.friendly_names[snipe['sourceID']]})
+                snipe.update({'dateTime' : datetime.fromtimestamp((self.start + snipe['timestamp'])/1000).replace(microsecond=0)})
+                snipe.update({'timeString' : snipe['dateTime'].strftime(r'%H:%M:%S')})
+                snipe.update({'eventString' : f"{snipe['timeString']} {base_heal['healer']}'s {base_heal['ability']['name']} " \
+                                                f"sniped by {snipe['healer']} for {snipe['amount']} using {snipe['ability']['name']} " \
+                                                f"during {snipe['fightName']}"})
 
-            if snipe['healer'] in self.max_snipers:
-                self.max_snipers[snipe['healer']]['amount'] += snipe['amount']
-                self.max_snipers[snipe['healer']]['snipes'].append(snipe)
-            else:
-                self.max_snipers.update({snipe['healer'] : {'amount' : snipe['amount'], 'snipes' : [snipe]}})
+                print(snipe['eventString'])
 
-            self.max_snipers[snipe['healer']].update({'completeString' : f"{snipe['healer']} : sniped people " \
-                                                                            f"{len(self.max_snipers[snipe['healer']]['snipes'])} " \
-                                                                            f"times for {self.max_snipers[snipe['healer']]['amount']}" \
-                                                                            " healing total"})
+                if snipe['healer'] in self.max_snipers:
+                    self.max_snipers[snipe['healer']]['amount'] += snipe['amount']
+                    self.max_snipers[snipe['healer']]['snipes'].append(snipe)
+                else:
+                    self.max_snipers.update({snipe['healer'] : {'amount' : snipe['amount'], 'snipes' : [snipe]}})
 
-            if base_heal['healer'] in self.max_sniped:
-                self.max_sniped[base_heal['healer']]['amount'] += snipe['amount']
-                self.max_sniped[base_heal['healer']]['snipes'].append(snipe)
-            else:
-                self.max_sniped.update({base_heal['healer'] : {'amount' : snipe['amount'], 'snipes' : [snipe]}})
-
-            self.max_sniped[base_heal['healer']].update({'completeString' : f"{base_heal['healer']} : got sniped by people " \
-                                                                                f"{len(self.max_sniped[base_heal['healer']]['snipes'])} " \
-                                                                                f"times for " \
-                                                                                f"{self.max_sniped[base_heal['healer']]['amount']}" \
+                self.max_snipers[snipe['healer']].update({'completeString' : f"{snipe['healer']} : sniped people " \
+                                                                                f"{len(self.max_snipers[snipe['healer']]['snipes'])} " \
+                                                                                f"times for {self.max_snipers[snipe['healer']]['amount']}" \
                                                                                 " healing total"})
+
+                if base_heal['healer'] in self.max_sniped:
+                    self.max_sniped[base_heal['healer']]['amount'] += snipe['amount']
+                    self.max_sniped[base_heal['healer']]['snipes'].append(snipe)
+                else:
+                    self.max_sniped.update({base_heal['healer'] : {'amount' : snipe['amount'], 'snipes' : [snipe]}})
+
+                self.max_sniped[base_heal['healer']].update({'completeString' : f"{base_heal['healer']} : got sniped by people " \
+                                                                                    f"{len(self.max_sniped[base_heal['healer']]['snipes'])} " \
+                                                                                    f"times for " \
+                                                                                    f"{self.max_sniped[base_heal['healer']]['amount']}" \
+                                                                                    " healing total"})
 
     def get_snipes(self, base_heal, n, delta, healing_events):
 
@@ -195,7 +197,9 @@ class HealingSnipes(Report):
                             f'<span style="font-size: 22px"><i>Healing Snipes</i></span><br>' \
                             f'<span style="font-size: 12px">{self.title} - ' \
                             f"{datetime.fromtimestamp(self.start/1000).strftime(r'%a %d %b %Y')}</span><br><br>"
-            report_title = f'{report_title}<span style="font-size: 12px;align=right">' \
+            report_title = f'{report_title}<span style="font-size: 12px;align=right">'\
+                            f'Tank healing snipes are disregarded</span><br>' \
+                            f'<span style="font-size: 12px;align=right">' \
                             f'Snipe Timeout {self.snipe_timeout / 1000} s</span><br>' \
                             f'<span style="font-size: 12px;align=right">' \
                             f'Snipe Treshold {self.snipe_threshold} hp</span><br>' \
@@ -227,106 +231,10 @@ class HealingSnipes(Report):
         palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
         self.make_time_plot(fig, snipers, 'snipes', 'amount', row=1, col=1, palette=palette, t_stamp_event_key='snipedHeal')
-        self.make_horizontal_plot(fig, snipers, 'snipes', 'completeString', row=1, col=2)
+        self.make_horizontal_plot(fig, snipers, 'snipes', 'completeString', row=1, col=2, palette=palette)
 
-        # for sniper in snipers:
-        #     timestamps = np.array([s['snipedHeal']['timeStamp'] for s in snipers[sniper]['snipes']])
-        #     event_vals = [s['amount'] for s in snipers[sniper]['snipes']]
-        #     event_strings = [s['eventString'] for s in snipers[sniper]['snipes']]
-        #     snipers[sniper].update({'markerColor' : next(palette)})
-        #     fig.add_trace(go.Bar(name=sniper,
-        #                             x=timestamps,
-        #                             y=event_vals,
-        #                             hovertext=event_strings,
-        #                             width=(self.end - self.start)/self.plot_time_barwidth_divisor,
-        #                             legendgroup=sniper,
-        #                             marker_color=snipers[sniper]['markerColor'],
-        #                             marker=dict(line=dict(width=0))),
-        #                             row=1, col=1)
-        # for sniper in reversed(snipers):
-        #     fig.add_trace(go.Bar(name=sniper,
-        #                             y=[sniper],
-        #                             x=[len(snipers[sniper]['snipes'])],
-        #                             hovertext=[snipers[sniper]['completeString']],
-        #                             orientation='h',
-        #                             legendgroup=sniper,
-        #                             showlegend=False,
-        #                             marker_color=snipers[sniper]['markerColor'],
-        #                             marker=dict(line=dict(width=0))),
-        #                             row=1, col=2)
-
-        # fig.update_xaxes(range=[self.start, self.end], mirror=True,
-        #                     zeroline=False,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=1)
-        # fig.update_yaxes(mirror=True,
-        #                     zeroline=False,
-        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=1)
-
-        # fig.update_yaxes(ticksuffix='  ', mirror=True,
-        #                     zeroline=False,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=2)
-        # fig.update_xaxes(mirror=True,
-        #                     zeroline=False,
-        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=1, col=2)
-
-        self.make_time_plot(fig, snipeds, 'snipes', 'amount', row=2, col=1, palette=palette, t_stamp_event_key='snipedHeal', marker_data_dict=snipers, showlegend=False)
-        self.make_horizontal_plot(fig, snipeds, 'snipes', 'completeString', row=2, col=2)
-
-        # for sniped in snipeds:
-        #     timestamps = np.array([s['snipedHeal']['timeStamp'] for s in snipeds[sniped]['snipes']])
-        #     event_vals = [s['amount'] for s in snipeds[sniped]['snipes']]
-        #     event_strings = [s['eventString'] for s in snipeds[sniped]['snipes']]
-        #     if sniped in snipers:
-        #         snipeds[sniped].update({'markerColor' : snipers[sniped]['markerColor']})
-        #     else:
-        #         snipeds[sniped].update({'markerColor' : next(palette)})
-        #     fig.add_trace(go.Bar(name=sniped,
-        #                             x=timestamps,
-        #                             y=event_vals,
-        #                             hovertext=event_strings,
-        #                             width=(self.end - self.start)/self.plot_time_barwidth_divisor,
-        #                             legendgroup=sniped,
-        #                             showlegend=False,
-        #                             marker_color=snipeds[sniped]['markerColor'],
-        #                             marker=dict(line=dict(width=0))),
-        #                             row=2, col=1)
-        # for sniped in reversed(snipeds):
-        #     fig.add_trace(go.Bar(name=sniped,
-        #                             y=[sniped],
-        #                             x=[len(snipeds[sniped]['snipes'])],
-        #                             hovertext=[snipeds[sniped]['completeString']],
-        #                             orientation='h',
-        #                             legendgroup=sniped,
-        #                             showlegend=False,
-        #                             marker_color=snipeds[sniped]['markerColor'],
-        #                             marker=dict(line=dict(width=0))),
-        #                             row=2, col=2)
-
-        # fig.update_xaxes(range=[self.start, self.end], mirror=True,
-        #                     zeroline=False,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=2, col=1)
-        # fig.update_yaxes(mirror=True,
-        #                     zeroline=False,
-        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=2, col=1)
-
-        # fig.update_yaxes(ticksuffix='  ', mirror=True,
-        #                     zeroline=False,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=2, col=2)
-        # fig.update_xaxes(mirror=True,
-        #                     zeroline=False,
-        #                     showgrid=True, gridcolor=self.plot_axiscolor, gridwidth=1,
-        #                     linecolor=self.plot_axiscolor, showline=True, linewidth=1,
-        #                     row=2, col=2)
+        self.make_time_plot(fig, snipeds, 'snipes', 'amount', row=2, col=1, palette=palette, t_stamp_event_key='snipedHeal')
+        self.make_horizontal_plot(fig, snipeds, 'snipes', 'completeString', row=2, col=2, palette=palette)
 
         fig.update_layout(barmode='stack',
                           paper_bgcolor=self.paper_bgcolor,

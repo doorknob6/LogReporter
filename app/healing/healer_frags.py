@@ -270,29 +270,29 @@ class HealerFrags(Report):
         palette = cycle(getattr(colors.qualitative, self.plot_palette))
 
         self.make_time_plot(fig, healers, 'damageEvents', 'amount', row=1, col=1, palette=palette)
-        self.make_horizontal_plot(fig, healers, 'damage', 'completeString', row=1, col=9)
+        self.make_horizontal_plot(fig, healers, 'damage', 'completeString', row=1, col=9, palette=palette)
 
         n_col = 0
 
         if skeleton_frags:
             n_col += 1
             healers = self.sort_dict(healers, 'skeletonFrags', reverse=True)
-            self.make_horizontal_plot(fig, healers, 'skeletonFrags', 'skeletonString', row=2, col=n_col)
+            self.make_horizontal_plot(fig, healers, 'skeletonFrags', 'skeletonString', row=2, col=n_col, palette=palette)
 
         if loatheb_events:
             n_col += int(n_cols / n_lists) if n_col > 0 else 1
             healers = self.sort_dict(healers, 'loathebDamage', reverse=True)
-            self.make_horizontal_plot(fig, healers, 'loathebDamage', 'loathebString', row=2, col=n_col)
+            self.make_horizontal_plot(fig, healers, 'loathebDamage', 'loathebString', row=2, col=n_col, palette=palette)
 
         if viscidus_events:
             n_col += int(n_cols / n_lists) if n_col > 0 else 1
             healers = self.sort_dict(healers, 'viscidusSlaps', reverse=True)
-            self.make_horizontal_plot(fig, healers, 'viscidusSlaps', 'viscidusString', row=2, col=n_col)
+            self.make_horizontal_plot(fig, healers, 'viscidusSlaps', 'viscidusString', row=2, col=n_col, palette=palette)
 
         if cthun_events:
             n_col += int(n_cols / n_lists) if n_col > 0 else 1
             healers = self.sort_dict(healers, 'cthunDamage', reverse=True)
-            self.make_horizontal_plot(fig, healers, 'cthunDamage', 'cthunString', row=2, col=n_col)
+            self.make_horizontal_plot(fig, healers, 'cthunDamage', 'cthunString', row=2, col=n_col, palette=palette)
 
         fig.update_layout(barmode='stack',
                           paper_bgcolor=self.paper_bgcolor,
