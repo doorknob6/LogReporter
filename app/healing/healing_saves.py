@@ -12,8 +12,8 @@ from itertools import cycle
 
 class HealingSaves(Report):
 
-    def __init__(self, report, api, fig_dir=None, healing_spells=None, full_report=False):
-        Report.__init__(self, report, api, fig_dir=fig_dir)
+    def __init__(self, report, api, fig_dir=None, healing_spells=None, full_report=False, fights=None, tanks=None):
+        Report.__init__(self, report, api, fig_dir=fig_dir, fights=fights, tanks=tanks)
 
         assert healing_spells is not None, "Please provide a list with healing_spell dataclasses."
 
