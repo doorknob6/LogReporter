@@ -64,6 +64,7 @@ class HealingSaves(Report):
 
         self.near_death_percentage = self.get_input(f"{'near death percentage':<25}", 15, unit='%')
         self.death_timeout = self.get_input(f"{'death timeout':<25}", 8000, 'ms')
+        self.no_damage_timeout = self.get_input(f"{'no damage timeout':<25}", 30000, 'ms')
         self.heal_timeout = self.get_input(f"{'heal timeout':<25}", 3000, 'ms')
         self.heal_treshold = self.get_input(f"{'heal treshold':<25}", 800, 'hp')
 
@@ -83,7 +84,7 @@ class HealingSaves(Report):
         self.near_deaths = []
         self.save_healers = {}
 
-        for damage in self.damage_events:
+        for damage, i in zip(self.damage_events, range(len(self.damage_events))):
             if 'hitPoints' in damage:
                 if damage['hitPoints'] < self.near_death_percentage:
                     prev_damage = [d for d in self.near_deaths if self.get_target_id(d) == self.get_target_id(damage) and
@@ -93,11 +94,22 @@ class HealingSaves(Report):
                                     damage['timestamp'] <= d['timestamp'] <= damage['timestamp'] + self.death_timeout]
                         if not death:
 
-                            saves = self.get_saves(damage, self.healing_events, self.heal_timeout, self.heal_treshold)
+                            next_damage = []
 
-                            if saves:
+                            for d in self.damage_events[i:]:
+                                if d['timestamp'] <= damage['timestamp'] + self.no_damage_timeout:
+                                    if self.get_target_id(d) == self.get_target_id(damage):
+                                        next_damage.append(d)
+                                else:
+                                    break
 
-                                self.process_saves(damage, saves)
+                            if next_damage:
+
+                                saves = self.get_saves(damage, self.healing_events, self.heal_timeout, self.heal_treshold)
+
+                                if saves:
+
+                                    self.process_saves(damage, saves)
 
         print()
 
@@ -200,6 +212,8 @@ class HealingSaves(Report):
                             f'Near death counted under {self.near_death_percentage} %</span><br>'
             report_title = f'{report_title}<span style="font-size: 12px;align:right">' \
                             f'Death Timeout {self.death_timeout / 1000} s</span><br>'
+            report_title = f'{report_title}<span style="font-size: 12px;align:right">' \
+                            f'No damage taken timeout {self.no_damage_timeout / 1000} s</span><br>'
             report_title = f'{report_title}<span style="font-size: 12px;align:right">' \
                             f'Heal Timeout  {self.heal_timeout / 1000} s</span><br>'
             report_title = f'{report_title}<span style="font-size: 12px;align:right">' \
