@@ -80,6 +80,7 @@ class Report():
             if self.fights:
                 for fight in self.fights['fights']:
                     if fight['start_time'] <= event['timestamp'] <= fight['end_time']:
+                        event['fight'] = fight['id']
                         return fight['name']
         return None
 
@@ -92,6 +93,8 @@ class Report():
     def is_tank(self, event):
 
         tank = False
+        if not 'fight' in event:
+            print()
 
         if event['fight'] in self.tanks['fights']:
             if event['targetID'] in self.tanks:
