@@ -32,25 +32,33 @@ class Main():
                                             self.api,
                                             fig_dir=self.figures_dir,
                                             healing_spells=self.healing_spells.content,
-                                            full_report=True))
+                                            full_report=True,
+                                            fights=self.reports[0].fights,
+                                            tanks=self.reports[0].tanks))
 
         self.reports.append(HealingManaConsumes(self.report,
                                                 self.api,
                                                 fig_dir=self.figures_dir,
                                                 healing_consumes=self.healing_consumes.content,
                                                 server_name=self.wcl_config.content.server,
-                                                full_report=True))
+                                                full_report=True,
+                                                fights=self.reports[0].fights,
+                                                tanks=self.reports[0].tanks))
 
         self.reports.append(HealingTaps(self.report,
                                         self.api,
                                         fig_dir=self.figures_dir,
                                         healing_spells=self.healing_spells.content,
-                                        full_report=True))
+                                        full_report=True,
+                                        fights=self.reports[0].fights,
+                                        tanks=self.reports[0].tanks))
 
         self.reports.append(HealerFrags(self.report,
                                         self.api,
                                         fig_dir=self.figures_dir,
-                                        full_report=True))
+                                        full_report=True,
+                                        fights=self.reports[0].fights,
+                                        tanks=self.reports[0].tanks))
 
         self.report_template = self.read_report_template(self.reports_dir, 'healing_report_template.html')
 
