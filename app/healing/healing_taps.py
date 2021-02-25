@@ -139,8 +139,9 @@ class HealingTaps(Report):
         tap_heals = []
 
         n = self.find_time_index(tap['timestamp'], healing_events)
+        n = n-15 if n-15 > 0 else 0
 
-        for heal in healing_events[n-15:]:
+        for heal in healing_events[n:]:
 
             if self.is_tap_heal(tap, heal, grace_timeout, tap_heal_timeout):
 

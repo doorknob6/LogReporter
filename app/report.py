@@ -136,6 +136,10 @@ class Report():
 
     def find_time_index(self, base_timestamp, event_list):
         n = 0
+
+        if self.is_undershot(event_list[0]['timestamp'], base_timestamp):
+            return 0
+
         while self.is_undershot(base_timestamp, event_list[n]['timestamp']):
             n = n_1 if (n_1:=n+1000) < len(event_list) else len(event_list) - 1
             if n == len(event_list) - 1:

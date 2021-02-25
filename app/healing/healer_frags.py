@@ -162,7 +162,7 @@ class HealerFrags(Report):
 
         self.assert_instantiated()
 
-        bar = tqdm(desc='\tReading Events from Warcraftlogs', total=len(classes))
+        bar = tqdm(desc='Reading Events from Warcraftlogs', total=len(classes))
 
         events = []
         for game_class in classes:
